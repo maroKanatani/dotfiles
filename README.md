@@ -58,6 +58,31 @@ username, and the Home Manager evaluation does not use `--impure`.
 The shared module is also available as `homeManagerModules.default` for other
 flakes that want to compose it.
 
+## Update managed tools
+
+Update the `nixpkgs` input, review the lock-file change, apply the updated Home
+Manager configuration, and verify the tool version:
+
+```sh
+nix flake update nixpkgs
+git diff -- flake.lock
+nix run .#apply
+jq --version
+```
+
+Use `nix flake update` to update all flake inputs, or
+`nix flake update home-manager` to update only Home Manager. This repository
+manages tools through the flake and Home Manager, so `nix profile upgrade` is
+not normally used.
+
+If an update causes a problem, restore the `flake.lock` change and apply the
+configuration again:
+
+```sh
+git restore -- flake.lock
+nix run .#apply
+```
+
 ## Format
 
 Format the repository and fail if formatting would change files:
