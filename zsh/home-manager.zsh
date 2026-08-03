@@ -6,3 +6,22 @@ if [[ -r "$hm_session_vars" ]]; then
 fi
 
 unset hm_session_vars
+
+if (( $+commands[mise] )); then
+  eval "$(mise activate zsh)"
+else
+  export PATH="$HOME/.local/share/mise/shims:$PATH"
+  rehash
+fi
+
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+fi
+
+if (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+fi
+
+if (( $+commands[direnv] )); then
+  eval "$(direnv hook zsh)"
+fi

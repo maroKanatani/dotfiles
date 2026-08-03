@@ -9,6 +9,7 @@ information in the repository.
 - `flake.nix`: package outputs, formatter, and Home Manager entry points
 - `nix/packages.nix`: catalog of packages managed by this repository
 - `nix/home.nix`: shared Home Manager settings
+- `mise/config.toml`: global versions for language runtimes and development tools
 - `zsh/home-manager.zsh`: zsh bridge for standalone Home Manager sessions
 
 No username or home-directory path is stored in this repository, and the Nix
@@ -57,6 +58,56 @@ username, and the Home Manager evaluation does not use `--impure`.
 
 The shared module is also available as `homeManagerModules.default` for other
 flakes that want to compose it.
+
+## Install mise-managed tools
+
+Home Manager deploys `mise/config.toml` to `~/.config/mise/config.toml`. It pins
+Python, Node.js, pnpm, Deno, Temurin 21, Zig, uv, Terraform, and actionlint for
+the whole user environment.
+
+Apply the Home Manager settings, start a new shell, and install the pinned
+versions:
+
+```sh
+nix run .#apply
+exec zsh
+mise install
+mise current
+```
+
+The configuration is deployed as mise's global config instead of a root-level
+`mise.toml`, because these tools should be available outside this repository as
+well. A project can still override the global versions with its own
+`mise.toml` or `.tool-versions` file.
+
+Existing project-specific version files are also enabled for the managed
+tools. For example, mise reads `.node-version`, `.nvmrc`, `.python-version`,
+`.deno-version`, `.java-version`, `.terraform-version`, `.zig-version`, and
+the Node.js or pnpm version declared in `package.json`. Enter the project and
+install any missing version:
+
+```sh
+cd path/to/project
+mise current
+mise install
+```
+
+## Use Docker with Colima
+
+Nix manages Colima, the Docker CLI, Buildx, Compose, credential helpers, Lima,
+and QEMU. Home Manager links the Buildx and Compose plugins into
+`~/.docker/cli-plugins/`; it does not manage `~/.docker/config.json`.
+
+After applying the Home Manager settings, start Colima and verify the Docker
+CLI and its plugins:
+
+```sh
+nix run .#apply
+colima start
+docker version
+docker buildx version
+docker compose version
+```
 
 ## Update managed tools
 
