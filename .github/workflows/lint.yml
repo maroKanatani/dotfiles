@@ -1,0 +1,25 @@
+name: 'CI: Lint'
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: ./.github/actions/setup-nix
+
+      - name: Check flake
+        run: nix flake check --all-systems --show-trace
+
+      - name: Check formatting
+        run: nix run .#fmt -- --fail-on-change

@@ -1,0 +1,4 @@
+{ pkgs }:
+{
+  jq = pkgs.jq;
+}
