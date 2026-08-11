@@ -82,9 +82,9 @@ skills.
 
 The curated set contains only focused workflows that are actively maintained:
 `gh-activity`, `gh-create-pr`, `git-create-worktree`, and
-`japanese-tech-writing`. Domain-specific business knowledge such as CMAPI is
-managed outside this repository and is not included in the shared set. Add a
-new skill only when a repeated task needs
+`japanese-tech-writing`, and `reader-centered-communication`.
+Domain-specific business knowledge is managed outside this repository and is
+not included in the shared set. Add a new skill only when a repeated task needs
 specialized knowledge, a deterministic script, or a stable output contract.
 
 The complete Claude Code user settings are preserved in
@@ -118,6 +118,47 @@ dry run reports no unexpected collision.
 Claude and Codex hooks retain optional integrations with Superset and Herdr.
 Those integrations are not installed or managed here; hook commands check for
 their environment and scripts and become no-ops when they are unavailable.
+
+### Adopted AI plugins
+
+Ponytail and Reviewable HTML Workbench are installed from their upstream
+marketplaces. Use the host CLIs instead of copying their Skills or hooks into
+this repository:
+
+```sh
+codex plugin marketplace add DietrichGebert/ponytail
+codex plugin add ponytail@ponytail
+codex plugin marketplace add u-ichi/reviewable-html-workbench
+codex plugin add reviewable-html-workbench@reviewable-html-workbench-local
+
+claude plugin marketplace add DietrichGebert/ponytail
+claude plugin install ponytail@ponytail
+claude plugin marketplace add u-ichi/reviewable-html-workbench
+claude plugin install reviewable-html-workbench
+```
+
+After installing Ponytail in Codex, start `codex`, open `/hooks`, review and
+trust the plugin hooks, and then start a new thread. Start a new Claude Code
+session after either plugin changes. Node.js must be available to non-interactive
+hooks for Ponytail, and Reviewable HTML Workbench requires Python 3.11 or later.
+
+Do not copy Codex's generated marketplace, plugin, or hook-trust state from
+`~/.codex/config.toml` into this repository. Claude's reproducible marketplace
+and enabled-plugin keys remain recorded in `config/claude/settings.json`; the
+CLI-owned user file stays writable.
+
+### local-mcp evaluation
+
+`local-mcp` is not installed by this repository. It is a local MCP server for
+giving a remote ChatGPT session file and command access, but this repository
+does not define a ChatGPT connector endpoint, authenticated tunnel, background
+service, or allowed workspace roots. Installing only the binary would not
+produce a usable or reproducible connection.
+
+If those operational pieces are added later, keep `/permission ask` as the
+session default and start `local-mcp` from the exact project directory. Do not
+use `/permissions yolo`; treat every `without_sandbox` call as a separate
+host-and-network access decision.
 
 ### Skills, plugins, and APM
 

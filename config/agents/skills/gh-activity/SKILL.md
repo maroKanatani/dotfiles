@@ -34,8 +34,8 @@ description: "指定期間・指定リポジトリのGitHub活動を収集し、
 - `created_issues`: 期間内に作成したIssue
 - `created_prs`: 期間内に作成したPR
 - `merged_prs`: 期間内にマージされた自分のPR
-- `reviewed_pr_candidates`: 自分が過去にレビューし、期間内に更新されたPR。レビュー日時が期間内とは限らない
-- `commented_item_candidates`: 自分が過去にコメントし、期間内に更新されたIssueまたはPR。コメント日時が期間内とは限らない
+- `reviewed_pr_candidates`: 自分が過去にレビューし、期間内に更新されたPR（レビュー日時が期間内とは限らない）
+- `commented_item_candidates`: 自分が過去にコメントし、期間内に更新されたIssueまたはPR（コメント日時が期間内とは限らない）
 
 GitHub Searchの`updated:`は対象全体の更新日時であり、レビューやコメント自体の日時ではない。厳密なレビュー日時が必要な依頼では、この候補一覧を起点にレビューAPIなどで追加確認する。
 

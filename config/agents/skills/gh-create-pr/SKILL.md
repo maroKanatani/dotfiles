@@ -16,7 +16,7 @@ Pull Requestへ含める変更、検証結果、メタデータを確認して�
 5. コミットが必要な場合は、関係するファイルをパス指定でステージする。`git add .`と`git add -A`は使わない。リポジトリの規約がなければConventional Commits形式を使う。
 6. push前に、現在のブランチと送信先remoteを確認する。
 7. PRタイトルと本文を作る。本文はリポジトリのテンプレートを保ち、変更内容、判断理由、検証結果を記載する。自動生成署名は追加しない。
-8. `gh pr create`でPRを作成する。base、head、draftなど、結果を左右する値は明示する。
+8. `gh pr create`でPRを作成し、base、head、draftなど、結果を左右する値は明示する。
 9. assignee、label、reviewer、projectは、ユーザーまたはリポジトリの指示がある場合だけ設定する。過去のPRから推測して強制しない。
 10. 作成後にPRを取得し、URL、base、head、draft状態、指定したメタデータを確認する。
 
