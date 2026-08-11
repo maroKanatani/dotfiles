@@ -18,6 +18,9 @@ jobs:
 
       - uses: ./.github/actions/setup-nix
 
+      - name: Check agent configuration
+        run: bash scripts/check-agent-config.sh
+
       - name: Check flake
         run: nix flake check --all-systems --show-trace
 

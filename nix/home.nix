@@ -12,6 +12,24 @@
 
   home.file.".config/zsh/home-manager.zsh".source = ../zsh/home-manager.zsh;
   home.file.".config/mise/config.toml".source = ../mise/config.toml;
+  # Agent configuration is linked without force. Home Manager will stop instead
+  # of replacing an existing file, which makes adoption of legacy dotfiles
+  # explicit and recoverable.
+  home.file.".codex/AGENTS.md".source = ../config/agents/AGENTS.md;
+  home.file.".codex/hooks.json".source = ../config/codex/hooks.json;
+  home.file.".claude/AGENTS.md".source = ../config/agents/AGENTS.md;
+  home.file.".claude/CLAUDE.md".source = ../config/claude/CLAUDE.md;
+  home.file.".claude/statusline-command.sh".source = ../config/claude/statusline-command.sh;
+  home.file.".claude/hooks/notification/completed.wav".source =
+    ../config/claude/hooks/notification/completed.wav;
+  home.file.".agents/skills" = {
+    source = ../config/agents/skills;
+    recursive = true;
+  };
+  home.file.".claude/skills" = {
+    source = ../config/agents/skills;
+    recursive = true;
+  };
   home.file.".docker/cli-plugins/docker-buildx".source =
     "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";
   home.file.".docker/cli-plugins/docker-compose".source =

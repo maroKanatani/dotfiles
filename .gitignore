@@ -1,1 +1,5 @@
 result
+.DS_Store
+CLAUDE.local.md
+.claude/settings.local.json
+apm_modules/

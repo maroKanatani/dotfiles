@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "300000",
+    "BASH_MAX_TIMEOUT_MS": "1200000",
+    "DISABLE_AUTOUPDATER": "0",
+    "ENABLE_TOOL_SEARCH": "true"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(touch:*)",
+      "Bash(mkdir:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Read(**)",
+      "Edit(**)",
+      "WebFetch(domain:*)",
+      "Bash(node:*)",
+      "Bash(pnpm:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:code.visualstudio.com)",
+      "WebFetch(domain:docs.cursor.com)",
+      "WebFetch(domain:docs.cline.bot)",
+      "WebFetch(domain:docs.roo.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh release create:*)",
+      "Agent",
+      "Skill",
+      "ToolSearch",
+      "Bash(codex:*)",
+      "Bash(jq:*)",
+      "Bash(yq:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(bash:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(diff:*)",
+      "Bash(which:*)",
+      "Bash(test:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf ~/**)",
+      "Bash(rm -rf //**)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(npm publish:*)",
+      "Bash(pnpm publish:*)",
+      "Read(tmp/**/*)",
+      "Read(node_modules/)",
+      "Read(*.log)",
+      "Read(.env*)"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "opus",
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/hooks/herdr-agent-state.sh\" ] && bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Claudeが停止すべきか評価してください。以下のルールに従ってJSONのみで回答してください。(1) 入力に stop_hook_active: true が含まれる場合は必ず {\"ok\": true} を返す（無限ループ防止）。(2) Claudeがユーザーの返答を待っている、または質問をしている場合は {\"ok\": true} を返す。(3) ファイルの編集が途中、コマンドの実行忘れなど明らかに作業が中断している場合のみ {\"ok\": false, \"reason\": \"未完了の内容\"} を返す。"
+          },
+          {
+            "type": "command",
+            "command": "command -v afplay >/dev/null 2>&1 && [ -f \"$HOME/.claude/hooks/notification/completed.wav\" ] && afplay \"$HOME/.claude/hooks/notification/completed.wav\" || true"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "Plan",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\\n✅ Planning complete! To create a worktree for this feature, run:\\n   /create-worktree <feature-name>\\n'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
+          },
+          {
+            "type": "command",
+            "command": "printf '%s' 'ツール実行より先に、この発話への返答（受け止めと、これからやること）を本文で書くこと。'"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"$HOME/.claude/statusline-command.sh\""
+  },
+  "enabledPlugins": {
+    "cc-caffeine@samber": false,
+    "claude-security@claude-plugins-official": false,
+    "codex@openai-codex": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "code-review@claude-plugins-official": false
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
+  "outputStyle": "structured-reporting",
+  "language": "japanese",
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
+  "autoMemoryEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark",
+  "remoteControlAtStartup": false,
+  "skipAutoPermissionPrompt": true
+}

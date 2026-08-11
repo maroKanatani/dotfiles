@@ -11,6 +11,10 @@ information in the repository.
 - `nix/home.nix`: shared Home Manager settings
 - `mise/config.toml`: global versions for language runtimes and development tools
 - `zsh/home-manager.zsh`: zsh bridge for standalone Home Manager sessions
+- `config/agents/AGENTS.md`: shared instructions for coding agents
+- `config/agents/skills/`: curated shared Agent Skills sources
+- `config/claude/`: Claude Code user settings and managed assets
+- `config/codex/`: Codex settings that can be managed independently of runtime state
 
 No username or home-directory path is stored in this repository, and the Nix
 expressions do not use an impure environment lookup.
@@ -58,6 +62,74 @@ username, and the Home Manager evaluation does not use `--impure`.
 
 The shared module is also available as `homeManagerModules.default` for other
 flakes that want to compose it.
+
+## Manage Claude Code and Codex
+
+Shared instructions live in `config/agents/AGENTS.md`. Home Manager deploys
+them to each product's user-level standard location. Claude Code loads
+`config/claude/CLAUDE.md`, which imports the shared instructions and adds only
+Claude-specific guidance.
+
+Reusable workflows follow the Agent Skills layout under
+`config/agents/skills/`. Keeping the source outside a discovery directory
+avoids loading the same skill once from this repository and again from the
+user-level path.
+
+Home Manager exposes the same sources at both `~/.agents/skills/` for Codex and
+`~/.claude/skills/` for Claude Code. The target directories are populated
+recursively so unmanaged, product-specific skills can coexist with the managed
+skills.
+
+The curated set contains only focused workflows that are actively maintained:
+`gh-activity`, `gh-create-pr`, `git-create-worktree`, and
+`japanese-tech-writing`. Domain-specific business knowledge such as CMAPI is
+managed outside this repository and is not included in the shared set. Add a
+new skill only when a repeated task needs
+specialized knowledge, a deterministic script, or a stable output contract.
+
+The complete Claude Code user settings are preserved in
+`config/claude/settings.json`. Home Manager does not deploy this file yet:
+Claude's plugin commands update the user settings in place, while a normal Home
+Manager source would be a read-only Nix store link. Keep the existing writable
+settings link active until a writable out-of-store adoption flow is selected.
+
+Codex's `config.toml` is also intentionally not managed because Codex currently
+stores both durable preferences and machine-local state in that file. The
+separately managed `config/codex/hooks.json` does not require taking ownership
+of `config.toml`.
+
+Authentication, histories, caches, sessions, memories, project trust entries,
+marketplace refresh timestamps, and generated hook trust hashes are not part of
+this repository.
+
+Before applying the configuration, run the checks and a Home Manager dry run:
+
+```sh
+scripts/check-agent-config.sh
+nix run .#apply -- --dry-run
+```
+
+The Home Manager entries do not use `force`. If a legacy file or symlink is
+already present, activation stops rather than replacing it. Compare the legacy
+target with the corresponding source in this repository and preserve a backup
+before adopting the managed path. A normal apply should only be run after the
+dry run reports no unexpected collision.
+
+Claude and Codex hooks retain optional integrations with Superset and Herdr.
+Those integrations are not installed or managed here; hook commands check for
+their environment and scripts and become no-ops when they are unavailable.
+
+### Skills, plugins, and APM
+
+Keep a workflow as a standalone Skill while it is personal or still evolving.
+Use a product-specific plugin only when several Skills, hooks, agents, or MCP
+servers need to be installed and versioned as one unit.
+
+Microsoft APM is not part of the initial setup. Evaluate it in an isolated
+fixture when external Skill dependencies require a lockfile, the same package
+must be deployed to more agent products, or duplicated MCP configuration has
+become a real maintenance problem. Home Manager and APM must never own the same
+generated path.
 
 ## Install mise-managed tools
 
