@@ -43,7 +43,7 @@ jobs:
       - uses: ./.github/actions/setup-nix
 
       - name: Install tirith
-        run: nix profile install --inputs-from . nixpkgs#tirith
+        run: nix profile install --inputs-from . tirith#default
 
       # Exclude binary PDFs: tirith reads them as pasted text and reports
       # false-positive HIGH findings (ANSI escapes, control/confusable chars).
@@ -54,7 +54,11 @@ jobs:
       - name: Scan repository
         run: |
           set +e
-          tirith scan . --exclude '.git/**' --exclude '*.pdf' --ci --fail-on high
+          tirith scan . \
+            --exclude '.git/**' \
+            --exclude '*.pdf' \
+            --ci \
+            --fail-on high
           rc=$?
           if [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
             exit 0

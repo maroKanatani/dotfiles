@@ -30,7 +30,7 @@ check_instruction_import() {
     return
   fi
 
-  if ! rg --quiet '^[[:space:]]*@AGENTS\.md[[:space:]]*$' "$claude_instructions"; then
+  if ! grep -Eq '^[[:space:]]*@AGENTS\.md[[:space:]]*$' "$claude_instructions"; then
     report_error "$claude_instructions must import AGENTS.md with a standalone @AGENTS.md line"
   fi
 }
