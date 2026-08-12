@@ -1,0 +1,4 @@
+interface:
+  display_name: "読み手中心のコミュニケーション"
+  short_description: "質問・依頼・報告を読み手が理解し回答しやすい形に整える"
+  default_prompt: "$reader-centered-communication を使い、この質問・依頼・報告を読み手が理解し回答しやすい形へ整えてください。"
