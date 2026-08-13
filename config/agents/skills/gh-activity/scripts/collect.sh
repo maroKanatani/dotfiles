@@ -85,7 +85,13 @@ created_issues="$(search_items "is:issue author:${username} created:${date_range
 created_prs="$(search_items "is:pr author:${username} created:${date_range}${repo_query}")"
 merged_prs="$(search_items "is:pr author:${username} merged:${date_range}${repo_query}")"
 reviewed_pr_candidates="$(search_items "is:pr reviewed-by:${username} updated:${date_range} -author:${username}${repo_query}")"
-commented_item_candidates="$(search_items "commenter:${username} updated:${date_range} -author:${username}${repo_query}")"
+# GitHub Search APIはis:issue / is:pull-requestのいずれかを必須とするため、種別ごとに検索して結合する
+commented_pr_candidates="$(search_items "is:pr commenter:${username} updated:${date_range} -author:${username}${repo_query}")"
+commented_issue_candidates="$(search_items "is:issue commenter:${username} updated:${date_range} -author:${username}${repo_query}")"
+commented_item_candidates="$(jq -n \
+  --argjson prs "$commented_pr_candidates" \
+  --argjson issues "$commented_issue_candidates" \
+  '$prs + $issues')"
 
 jq -n \
   --arg since "$since" \
