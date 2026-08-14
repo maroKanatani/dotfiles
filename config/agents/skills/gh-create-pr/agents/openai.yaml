@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Pull Request Workflow"
+  short_description: "変更内容を確認し、Draft既定でPull Requestを作成"
+  default_prompt: "Use $gh-create-pr to create a pull request for the current branch."

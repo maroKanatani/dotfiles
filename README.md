@@ -84,6 +84,9 @@ Home Manager exposes the same sources at both `~/.agents/skills/` for Codex and
 recursively so unmanaged, product-specific skills can coexist with the managed
 skills.
 
+An optional `agents/openai.yaml` customizes OpenAI's skill UI and default
+prompt; the workflow itself remains in `SKILL.md`.
+
 The curated set contains only focused workflows that are actively maintained;
 see `config/agents/skills/` for the current set.
 Domain-specific business knowledge is managed outside this repository and is
