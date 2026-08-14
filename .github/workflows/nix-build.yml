@@ -42,6 +42,9 @@ jobs:
 
       - name: Scan repository
         uses: sheeki03/tirith@595f5adadaa151012cff0e3b7fa25f8d1599c92d # v0.3.3
+        env:
+          # v0.3.3 install.sh loses its local tmpdir before its EXIT trap runs.
+          tmpdir: ${{ runner.temp }}/tirith-action-cleanup
         with:
           version: '0.3.3'
           fail_on: high
