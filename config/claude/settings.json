@@ -7,46 +7,10 @@
     "ENABLE_TOOL_SEARCH": "true"
   },
   "permissions": {
-    "allow": [
-      "Bash(git:*)",
-      "Bash(gh:*)",
-      "Bash(touch:*)",
-      "Bash(mkdir:*)",
-      "Bash(rg:*)",
-      "Bash(grep:*)",
-      "Bash(cp:*)",
-      "Bash(mv:*)",
-      "Bash(rm:*)",
-      "Read(**)",
-      "Edit(**)",
-      "WebFetch(domain:*)",
-      "Bash(node:*)",
-      "Bash(pnpm:*)",
-      "Bash(find:*)",
-      "WebFetch(domain:code.visualstudio.com)",
-      "WebFetch(domain:docs.cursor.com)",
-      "WebFetch(domain:docs.cline.bot)",
-      "WebFetch(domain:docs.roo.com)",
-      "WebFetch(domain:docs.claude.com)",
-      "WebFetch(domain:github.com)",
-      "Bash(gh release create:*)",
-      "Agent",
-      "Skill",
-      "ToolSearch",
-      "Bash(codex:*)",
-      "Bash(jq:*)",
-      "Bash(yq:*)",
-      "Bash(python3:*)",
-      "Bash(python:*)",
-      "Bash(bash:*)",
-      "Bash(awk:*)",
-      "Bash(sed:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(echo:*)",
-      "Bash(diff:*)",
-      "Bash(which:*)",
-      "Bash(test:*)"
+    "ask": [
+      "Bash(git merge *)",
+      "Bash(git pull *)",
+      "Bash(gh pr create *)"
     ],
     "deny": [
       "Bash(rm -rf ~/**)",
@@ -153,10 +117,6 @@
           {
             "type": "command",
             "command": "printf '%s' 'ツール実行より先に、この発話への返答（受け止めと、これからやること）を本文で書くこと。'"
-          },
-          {
-            "type": "command",
-            "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"文書またはメッセージを作成・推敞する場合は、実際の読者の役割、前提知識、目的、利用場面を考慮し、読者とTPOに合わせて用語、語尾、情報の順序、説明量を調整する。読者が不明で結果が大きく変わる場合だけ確認し、それ以外は合理的な仮定で進める。コードや設定だけを返す依頼には適用しない。\"}}'"
           }
         ]
       }

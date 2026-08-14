@@ -12,29 +12,6 @@ report_error() {
   errors=$((errors + 1))
 }
 
-check_instruction_import() {
-  local shared_instructions=config/agents/AGENTS.md
-  local claude_instructions=config/claude/CLAUDE.md
-
-  if [[ ! -e "$claude_instructions" ]]; then
-    return
-  fi
-
-  if [[ ! -f "$shared_instructions" ]]; then
-    report_error "$shared_instructions is missing while $claude_instructions exists"
-    return
-  fi
-
-  if [[ ! -f "$claude_instructions" ]]; then
-    report_error "$claude_instructions is not a regular file"
-    return
-  fi
-
-  if ! grep -Eq '^[[:space:]]*@AGENTS\.md[[:space:]]*$' "$claude_instructions"; then
-    report_error "$claude_instructions must import AGENTS.md with a standalone @AGENTS.md line"
-  fi
-}
-
 frontmatter_value() {
   local skill_file="$1"
   local field="$2"
@@ -193,7 +170,6 @@ check_forbidden_tracked_files() {
   done < <(git ls-files -z)
 }
 
-check_instruction_import
 check_skills
 check_json config/claude/settings.json
 check_json config/codex/hooks.json

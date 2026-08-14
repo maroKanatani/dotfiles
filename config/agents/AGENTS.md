@@ -53,6 +53,13 @@
 - 完了報告はOutcome、各Acceptance CriterionとEvidence、利用者が知る実益のあるRejected Claims、Fuse停止時のOpen Items、`COMPLETED`または`FUSE_STOPPED`のStatusに限定する。
 - 推測による完了、Evidenceなしの完了、目的外の改善、便乗リファクタリング、証拠の水増し、着手済みClaimの惰性維持、Fixed Point後の追加レビューを禁止する。
 
+## GitとGitHub
+
+- branchの同期や履歴の競合解消は、原則として`fetch`後の`rebase`または`pull --rebase`で行う。利用者の明示または具体的な必要性がない限り、`merge`、remote-tracking branchのmerge、merge方式の`pull`は実行しない。例外が必要なら、理由と履歴への影響を示して実行前に確認する。
+- コミット前に対象の差分を確認し、コミットメッセージはConventional Commits形式で具体的な変更内容を書く。`fix: レビュー指摘に対応`のように作業の契機だけを示し、差分を特定できないメッセージは使わない。リポジトリ固有の規約と両立しない場合は、実行前に確認する。
+- Pull Requestは、利用者がReady状態を明示しない限りDraftで作成する。作成後にbase、head、Draft状態を確認する。
+- レビューや指摘コメントは相手を責めず、対等な立場で書く。意図をprefixで示し、AI特有の冗長で回りくどい表現を避ける。レビューまたは指摘対応では`gh-handle-review` Skillに従う。
+
 ## 変更の原則
 
 - 利用者による既存変更と未追跡ファイルを尊重し、無関係な差分を編集しない。

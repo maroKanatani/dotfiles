@@ -3,7 +3,6 @@
 # Displays: folder path, repo|branch, context|model, 5h/7d usage, cost, worktree
 
 input=$(cat)
-echo "$input" >> /tmp/statusline-debug.json
 
 # Parse statusline JSON
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
