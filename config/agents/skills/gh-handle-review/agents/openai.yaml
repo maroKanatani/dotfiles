@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Review Workflow"
+  short_description: "レビュー指摘の作成と対応、関連文書の整合確認を簡潔に実行"
+  default_prompt: "Use $gh-handle-review to review this change or address the current PR feedback."

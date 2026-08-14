@@ -48,6 +48,11 @@
       "Bash(which:*)",
       "Bash(test:*)"
     ],
+    "ask": [
+      "Bash(git merge *)",
+      "Bash(git pull *)",
+      "Bash(gh pr create *)"
+    ],
     "deny": [
       "Bash(rm -rf ~/**)",
       "Bash(rm -rf //**)",

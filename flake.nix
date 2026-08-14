@@ -9,9 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Nixpkgs may lag behind tirith fixes that are important for this scan.
-    # Keep the scanner itself pinned independently of the system package set.
-    tirith.url = "github:sheeki03/tirith/e748ca15e07e3e106e483535562a226a72df7b1f";
   };
 
   outputs =

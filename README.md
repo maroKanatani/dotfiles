@@ -65,10 +65,14 @@ flakes that want to compose it.
 
 ## Manage Claude Code and Codex
 
-Shared instructions live in `config/agents/AGENTS.md`. Home Manager deploys
-them to each product's user-level standard location. Claude Code loads
-`config/claude/CLAUDE.md`, which imports the shared instructions and adds only
-Claude-specific guidance.
+User-level shared instructions live in `config/agents/AGENTS.md`. Home Manager
+deploys the same source as `~/.codex/AGENTS.md` for Codex and
+`~/.claude/rules/common.md` for Claude Code. This repository's own instructions
+live in the root `AGENTS.md`; `CLAUDE.md` imports it for Claude Code.
+
+Codex command policies live in `config/codex/rules/` and are deployed to
+`~/.codex/rules/`. They prompt before merge, pull, and PR creation commands;
+the corresponding Agent Skills define the preferred workflow and output.
 
 Reusable workflows follow the Agent Skills layout under
 `config/agents/skills/`. Keeping the source outside a discovery directory
@@ -80,9 +84,11 @@ Home Manager exposes the same sources at both `~/.agents/skills/` for Codex and
 recursively so unmanaged, product-specific skills can coexist with the managed
 skills.
 
-The curated set contains only focused workflows that are actively maintained:
-`gh-activity`, `gh-create-pr`, `git-create-worktree`, and
-`japanese-tech-writing`, and `reader-centered-communication`.
+An optional `agents/openai.yaml` customizes OpenAI's skill UI and default
+prompt; the workflow itself remains in `SKILL.md`.
+
+The curated set contains only focused workflows that are actively maintained;
+see `config/agents/skills/` for the current set.
 Domain-specific business knowledge is managed outside this repository and is
 not included in the shared set. Add a new skill only when a repeated task needs
 specialized knowledge, a deterministic script, or a stable output contract.
@@ -91,7 +97,9 @@ The complete Claude Code user settings are preserved in
 `config/claude/settings.json`. Home Manager does not deploy this file yet:
 Claude's plugin commands update the user settings in place, while a normal Home
 Manager source would be a read-only Nix store link. Keep the existing writable
-settings link active until a writable out-of-store adoption flow is selected.
+user settings active until a writable out-of-store adoption flow is selected.
+Do not duplicate these personal settings in a repository's
+`.claude/settings.json`; that path is project-scoped.
 
 Codex's `config.toml` is also intentionally not managed because Codex currently
 stores both durable preferences and machine-local state in that file. The

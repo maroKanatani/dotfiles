@@ -1,0 +1,41 @@
+prefix_rule(
+    pattern = ["git", "merge"],
+    decision = "prompt",
+    justification = "Mergeは例外運用です.rebaseで代替できない理由と履歴への影響を確認してください.",
+    match = [
+        "git merge main",
+        "git merge --no-ff origin/main",
+    ],
+    not_match = [
+        "git rebase main",
+        "git fetch origin",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "pull"],
+    decision = "prompt",
+    justification = "Pullがmergeを作らないよう、--rebaseの有無を確認してください.",
+    match = [
+        "git pull",
+        "git pull --rebase origin main",
+    ],
+    not_match = [
+        "git fetch origin",
+        "git rebase origin/main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "prompt",
+    justification = "Ready指定がないPRに--draftが付いていることを確認してください.",
+    match = [
+        "gh pr create --draft --base main --head feature",
+        "gh pr create --title example --body-file body.md",
+    ],
+    not_match = [
+        "gh pr view 123",
+        "gh pr checks 123",
+    ],
+)
