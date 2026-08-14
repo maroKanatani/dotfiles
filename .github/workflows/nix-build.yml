@@ -40,30 +40,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: ./.github/actions/setup-nix
-
-      - name: Install tirith
-        run: nix profile install --inputs-from . tirith#default
-
-      # Exclude binary PDFs: tirith reads them as pasted text and reports
-      # false-positive HIGH findings (ANSI escapes, control/confusable chars).
-      #
-      # tirith exit codes: 0 = clean, 1 = high/critical findings (block the
-      # gate), 2 = only findings below the --fail-on threshold (allow). The
-      # gate must fail only on code 1, so 0 and 2 are treated as passing.
       - name: Scan repository
-        run: |
-          set +e
-          tirith scan . \
-            --exclude '.git/**' \
-            --exclude '*.pdf' \
-            --ci \
-            --fail-on high
-          rc=$?
-          if [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
-            exit 0
-          fi
-          exit "$rc"
+        uses: sheeki03/tirith@595f5adadaa151012cff0e3b7fa25f8d1599c92d # v0.3.3
+        with:
+          version: '0.3.3'
+          fail_on: high
+          sarif: 'false'
+          ignore: '.git/**,*.pdf,.github/actions/setup-nix/action.yml'
 
   build-ubuntu:
     needs: [changes, security]
