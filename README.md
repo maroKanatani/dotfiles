@@ -84,10 +84,8 @@ Home Manager exposes the same sources at both `~/.agents/skills/` for Codex and
 recursively so unmanaged, product-specific skills can coexist with the managed
 skills.
 
-The curated set contains only focused workflows that are actively maintained:
-`gh-activity`, `gh-create-pr`, `gh-handle-review`, `git-create-worktree`,
-`japanese-tech-writing`, and
-`reader-centered-communication`.
+The curated set contains only focused workflows that are actively maintained;
+see `config/agents/skills/` for the current set.
 Domain-specific business knowledge is managed outside this repository and is
 not included in the shared set. Add a new skill only when a repeated task needs
 specialized knowledge, a deterministic script, or a stable output contract.

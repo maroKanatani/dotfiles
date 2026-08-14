@@ -20,6 +20,8 @@
   home.file.".codex/rules/git-workflow.rules".source = ../config/codex/rules/git-workflow.rules;
   home.file.".claude/rules/common.md".source = ../config/agents/AGENTS.md;
   home.file.".claude/statusline-command.sh".source = ../config/claude/statusline-command.sh;
+  home.file.".claude/hooks/notification/completed.wav".source =
+    ../config/claude/hooks/notification/completed.wav;
   home.file.".agents/skills" = {
     source = ../config/agents/skills;
     recursive = true;

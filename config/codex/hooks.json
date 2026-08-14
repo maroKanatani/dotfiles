@@ -35,6 +35,10 @@
           {
             "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true",
             "type": "command"
+          },
+          {
+            "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"文書またはメッセージを作成・推敞する場合は、実際の読者の役割、前提知識、目的、利用場面を考慮し、読者とTPOに合わせて用語、語尾、情報の順序、説明量を調整する。読者が不明で結果が大きく変わる場合だけ確認し、それ以外は合理的な仮定で進める。コードや設定だけを返す依頼には適用しない。\"}}'",
+            "type": "command"
           }
         ]
       }
