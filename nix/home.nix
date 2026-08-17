@@ -1,8 +1,11 @@
 { config, pkgs, ... }:
+let
+  packages = import ./packages.nix { inherit pkgs; };
+in
 {
   home.stateVersion = "26.05";
 
-  home.packages = builtins.attrValues (import ./packages.nix { inherit pkgs; });
+  home.packages = builtins.attrValues packages;
 
   home.sessionPath = [
     "${config.home.profileDirectory}/bin"
@@ -28,6 +31,13 @@
     source = ../config/agents/skills;
     recursive = true;
   };
+  # Herdr ships its own agent skill inside the package. Deploying that copy
+  # keeps the skill and the binary on the same version instead of letting a
+  # vendored snapshot drift away from the installed CLI.
+  home.file.".agents/skills/herdr/SKILL.md".source =
+    "${packages.herdr}/share/herdr/skills/herdr/SKILL.md";
+  home.file.".claude/skills/herdr/SKILL.md".source =
+    "${packages.herdr}/share/herdr/skills/herdr/SKILL.md";
   home.file.".docker/cli-plugins/docker-buildx".source =
     "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";
   home.file.".docker/cli-plugins/docker-compose".source =

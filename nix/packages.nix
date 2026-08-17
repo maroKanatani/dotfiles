@@ -11,6 +11,7 @@
   fd = pkgs.fd;
   fzf = pkgs.fzf;
   gh = pkgs.gh;
+  herdr = pkgs.herdr;
   jq = pkgs.jq;
   lazygit = pkgs.lazygit;
   lima = pkgs.lima;
