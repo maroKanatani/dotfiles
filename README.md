@@ -127,6 +127,38 @@ Claude and Codex hooks retain optional integrations with Superset and Herdr.
 Those integrations are not installed or managed here; hook commands check for
 their environment and scripts and become no-ops when they are unavailable.
 
+### Claude Code cloud sessions
+
+Cloud sessions, which include Claude Code on the web, `claude --cloud`, and
+routines, run on a fresh VM. They read the cloned repository, that VM's own home
+directory, and the cloud environment configuration; the Home Manager links on a
+local machine never reach them.
+
+`scripts/cloud-setup.sh` deploys the same shared sources into the session VM.
+Register the bootstrap in the **Setup script** field of the cloud environment at
+[claude.ai/code](https://claude.ai/code):
+
+```sh
+git clone --depth 1 https://github.com/maroKanatani/dotfiles.git /opt/dotfiles
+bash /opt/dotfiles/scripts/cloud-setup.sh
+exit 0
+```
+
+One environment-level registration covers every repository, so no personal
+configuration is committed to a project's `.claude/` directory. Start a new
+cloud session afterwards and confirm that the shared skills are listed and the
+shared instructions are loaded.
+
+The setup script runs when an environment has no cached snapshot, and the
+resulting filesystem is reused for roughly seven days. A change in this
+repository therefore reaches new sessions after the cache is rebuilt; editing
+the environment's setup script field rebuilds it immediately.
+
+`config/claude/settings.json` is not deployed to a cloud session. Its hooks,
+status line, and output style depend on the local machine, and user-scoped
+`enabledPlugins` is not applied there; plugins for a cloud session have to be
+declared in the target repository's project settings.
+
 ### Adopted AI plugins
 
 Ponytail and Reviewable HTML Workbench are installed from their upstream
