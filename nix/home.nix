@@ -43,5 +43,25 @@ in
   home.file.".docker/cli-plugins/docker-compose".source =
     "${pkgs.docker-compose}/libexec/docker/cli-plugins/docker-compose";
 
+  # gh extensions are declared here instead of being installed at runtime with
+  # `gh extension install`. Home Manager owns the whole extension directory, so
+  # every extension has to be listed; `gh cache` replaced gh-actions-cache in
+  # gh itself, which is why only gh-poi remains.
+  programs.gh = {
+    enable = true;
+    package = packages.gh;
+    extensions = [
+      pkgs.gh-dash
+      pkgs.gh-f
+      pkgs.gh-markdown-preview
+      pkgs.gh-poi
+      pkgs.gh-stack
+    ];
+    settings = {
+      git_protocol = "https";
+      aliases.co = "pr checkout";
+    };
+  };
+
   programs.home-manager.enable = true;
 }

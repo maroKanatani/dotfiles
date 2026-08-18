@@ -277,6 +277,19 @@ docker buildx version
 docker compose version
 ```
 
+## Manage gh extensions
+
+Home Manager declares gh extensions in `programs.gh.extensions` and owns the
+whole `~/.local/share/gh/extensions` directory. `gh extension install` and
+`gh extension upgrade` therefore no longer apply: add the nixpkgs package to
+the list in `nix/home.nix` and run `nix run .#apply`, and update it with
+`nix flake update nixpkgs`.
+
+An extension that is missing from nixpkgs cannot be declared this way. Check
+whether gh itself already covers the feature before packaging it; the former
+`gh-actions-cache` extension was dropped from nixpkgs because `gh cache`
+replaced it.
+
 ## Update managed tools
 
 Update the `nixpkgs` input, review the lock-file change, apply the updated Home
