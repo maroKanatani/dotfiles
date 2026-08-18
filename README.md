@@ -90,6 +90,19 @@ prompt; the workflow itself remains in `SKILL.md`.
 The curated set contains only focused workflows that are actively maintained;
 see `config/agents/skills/` for the current set.
 
+Skills maintained in another repository are vendored with `gh skill`, which
+copies the upstream `SKILL.md` into `config/agents/skills/` and records the
+source repository, ref, and tree SHA in its front matter:
+
+```bash
+gh skill install github/gh-stack gh-stack --dir config/agents/skills
+```
+
+Home Manager deploys the vendored copy like any curated skill, and
+`gh skill update` reads the recorded metadata to detect upstream changes.
+`gh skill` does not verify skill contents, so read the file before committing
+it. Prefer a copy that a package already ships, as the Herdr skill below shows.
+
 The Herdr skill is not curated here. Herdr ships it inside its own package at
 `share/herdr/skills/herdr/SKILL.md`, and Home Manager deploys that file to
 `~/.agents/skills/herdr/SKILL.md` and `~/.claude/skills/herdr/SKILL.md`. The
