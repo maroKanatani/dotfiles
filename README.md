@@ -95,11 +95,12 @@ copies the upstream `SKILL.md` into `config/agents/skills/` and records the
 source repository, ref, and tree SHA in its front matter:
 
 ```bash
-gh skill install github/gh-stack gh-stack --dir config/agents/skills
+gh skill install github/gh-stack gh-stack --pin main --dir config/agents/skills --force
 ```
 
-Home Manager deploys the vendored copy like any curated skill, and
-`gh skill update` reads the recorded metadata to detect upstream changes.
+Home Manager deploys the vendored copy like any curated skill. Rerun the same
+command to refresh it from `main`; the pin prevents `gh skill update` from
+replacing it with the latest tagged release.
 `gh skill` does not verify skill contents, so read the file before committing
 it. Prefer a copy that a package already ships, as the Herdr skill below shows.
 
