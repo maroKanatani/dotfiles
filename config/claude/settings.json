@@ -178,7 +178,9 @@
     "rust-analyzer-lsp@claude-plugins-official": true,
     "code-review@claude-plugins-official": false,
     "ponytail@ponytail": true,
-    "reviewable-html-workbench@reviewable-html-workbench-local": true
+    "reviewable-html-workbench@reviewable-html-workbench-local": true,
+    "show-me@skills": true,
+    "eli5@claude-community": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -203,6 +205,18 @@
       "source": {
         "source": "github",
         "repo": "u-ichi/reviewable-html-workbench"
+      }
+    },
+    "skills": {
+      "source": {
+        "source": "github",
+        "repo": "humanlayer/skills"
+      }
+    },
+    "claude-community": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-community"
       }
     }
   },

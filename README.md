@@ -189,20 +189,28 @@ declared in the target repository's project settings.
 
 ### Adopted AI plugins
 
-Ponytail and Reviewable HTML Workbench are installed from their upstream
-marketplaces. Use the host CLIs instead of copying their Skills or hooks into
-this repository:
+Ponytail, Reviewable HTML Workbench, show-me, and ELI5 are installed from
+their upstream marketplaces. Use the host CLIs instead of copying their Skills
+or hooks into this repository:
 
 ```sh
 codex plugin marketplace add DietrichGebert/ponytail
 codex plugin add ponytail@ponytail
 codex plugin marketplace add u-ichi/reviewable-html-workbench
 codex plugin add reviewable-html-workbench@reviewable-html-workbench-local
+codex plugin marketplace add humanlayer/skills
+codex plugin add show-me@skills
+codex plugin marketplace add anthropics/claude-plugins-community
+codex plugin add eli5@claude-community
 
 claude plugin marketplace add DietrichGebert/ponytail
 claude plugin install ponytail@ponytail
 claude plugin marketplace add u-ichi/reviewable-html-workbench
 claude plugin install reviewable-html-workbench
+claude plugin marketplace add humanlayer/skills
+claude plugin install show-me@skills
+claude plugin marketplace add anthropics/claude-plugins-community
+claude plugin install eli5@claude-community
 ```
 
 After installing Ponytail in Codex, start `codex`, open `/hooks`, review and
@@ -301,7 +309,9 @@ the list in `nix/home.nix` and run `nix run .#apply`, and update it with
 An extension that is missing from nixpkgs cannot be declared this way. Check
 whether gh itself already covers the feature before packaging it; the former
 `gh-actions-cache` extension was dropped from nixpkgs because `gh cache`
-replaced it.
+replaced it. `gh-pr-graph` is not in nixpkgs, so `nix/packages.nix` packages
+its versioned upstream binaries and `nix/home.nix` declares that package as an
+extension.
 
 ## Update managed tools
 
