@@ -56,6 +56,7 @@ in
       pkgs.gh-markdown-preview
       pkgs.gh-poi
       pkgs.gh-stack
+      packages.gh-pr-graph
     ];
     settings = {
       git_protocol = "https";
