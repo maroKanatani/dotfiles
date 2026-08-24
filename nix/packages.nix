@@ -62,5 +62,6 @@ in
   tmux = pkgs.tmux;
   tree = pkgs.tree;
   yq = pkgs.yq;
+  zat = pkgs.zat;
   zoxide = pkgs.zoxide;
 }
