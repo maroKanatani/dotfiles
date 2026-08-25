@@ -190,9 +190,9 @@ declared in the target repository's project settings.
 
 ### Adopted AI plugins
 
-Ponytail, Reviewable HTML Workbench, show-me, and ELI5 are installed from
-their upstream marketplaces. Use the host CLIs instead of copying their Skills
-or hooks into this repository:
+Ponytail, Reviewable HTML Workbench, show-me, ELI5, and Matt Pocock's skills
+are installed from their upstream marketplaces. Use the host CLIs instead of
+copying their Skills or hooks into this repository:
 
 ```sh
 codex plugin marketplace add DietrichGebert/ponytail
@@ -203,6 +203,8 @@ codex plugin marketplace add humanlayer/skills
 codex plugin add show-me@skills
 codex plugin marketplace add anthropics/claude-plugins-community
 codex plugin add eli5@claude-community
+codex plugin marketplace add anthropics/claude-plugins-official
+codex plugin add mattpocock-skills@claude-plugins-official
 
 claude plugin marketplace add DietrichGebert/ponytail
 claude plugin install ponytail@ponytail
@@ -212,12 +214,25 @@ claude plugin marketplace add humanlayer/skills
 claude plugin install show-me@skills
 claude plugin marketplace add anthropics/claude-plugins-community
 claude plugin install eli5@claude-community
+claude plugin marketplace add anthropics/claude-plugins-official
+claude plugin install mattpocock-skills@claude-plugins-official
 ```
 
 After installing Ponytail in Codex, start `codex`, open `/hooks`, review and
 trust the plugin hooks, and then start a new thread. Start a new Claude Code
 session after either plugin changes. Node.js must be available to non-interactive
 hooks for Ponytail, and Reviewable HTML Workbench requires Python 3.11 or later.
+
+Twenty-five skills arrive with `mattpocock-skills`, eleven of them
+model-invoked, so those fire on their own whenever a task matches. Two overlaps
+are worth knowing before they surprise you: `writing-for-agents` triggers on
+edits to a skill or an `AGENTS.md`, which covers most work in this repository,
+and its `code-review` skill covers the same ground as the disabled
+`code-review@claude-plugins-official` plugin. Turn an individual skill off
+through the plugin instead of copying an edited file into
+`config/agents/skills/`. `setup-matt-pocock-skills` writes `docs/agents/*.md`
+and an `## Agent skills` section into whichever repository it runs in, so run
+it only where that per-repository configuration is wanted.
 
 Do not copy Codex's generated marketplace, plugin, or hook-trust state from
 `~/.codex/config.toml` into this repository. Claude's reproducible marketplace

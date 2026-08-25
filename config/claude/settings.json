@@ -180,7 +180,8 @@
     "ponytail@ponytail": true,
     "reviewable-html-workbench@reviewable-html-workbench-local": true,
     "show-me@skills": true,
-    "eli5@claude-community": true
+    "eli5@claude-community": true,
+    "mattpocock-skills@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
