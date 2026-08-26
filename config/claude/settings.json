@@ -69,6 +69,18 @@
   },
   "model": "opus",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -r \"$HOME/.claude/hooks/agents-rules-gate.sh\" ] && exec sh \"$HOME/.claude/hooks/agents-rules-gate.sh\" || { echo \"AGENTS ルール検査を実行できません: ~/.claude/hooks/agents-rules-gate.sh が未配備です\" >&2; exit 2; }",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PermissionRequest": [
       {
         "matcher": "*",

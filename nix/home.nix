@@ -23,6 +23,11 @@ in
   home.file.".codex/rules/git-workflow.rules".source = ../config/codex/rules/git-workflow.rules;
   home.file.".claude/rules/common.md".source = ../config/agents/AGENTS.md;
   home.file.".claude/statusline-command.sh".source = ../config/claude/statusline-command.sh;
+  # AGENTS.md のルールを PreToolUse で強制するフック。settings.json 側の
+  # command は未配備を検知して 2 を返すため、リンク漏れは素通しではなく停止になる。
+  home.file.".claude/hooks/agents-rules-gate.sh".source = ../config/claude/hooks/agents-rules-gate.sh;
+  home.file.".claude/hooks/agents-rules-gate.py".source = ../config/claude/hooks/agents-rules-gate.py;
+  home.file.".claude/hooks/checks.py".source = ../config/claude/hooks/checks.py;
   home.file.".agents/skills" = {
     source = ../config/agents/skills;
     recursive = true;

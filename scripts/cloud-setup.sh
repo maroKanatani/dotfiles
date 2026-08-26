@@ -27,8 +27,13 @@ link() {
   printf 'cloud-setup: linked %s -> %s\n' "$target_path" "$source_path"
 }
 
-mkdir -p "$claude_home/rules" "$claude_home/skills"
+mkdir -p "$claude_home/rules" "$claude_home/skills" "$claude_home/hooks"
 link "$repo_root/config/agents/AGENTS.md" "$claude_home/rules/common.md"
+
+# AGENTS.md のルールを PreToolUse で強制するフック。
+for hook_source in "$repo_root"/config/claude/hooks/*; do
+  link "$hook_source" "$claude_home/hooks/$(basename "$hook_source")"
+done
 
 # Link each skill individually so unmanaged skills in the session image can
 # coexist, matching the recursive Home Manager deployment.
