@@ -128,13 +128,17 @@ user settings active until a writable out-of-store adoption flow is selected.
 Do not duplicate these personal settings in a repository's
 `.claude/settings.json`; that path is project-scoped.
 
-`scripts/sync-claude-settings.py` copies one key out of that file into the
-writable user settings: `permissions`. A permission rule only takes effect when
-a settings file the session reads actually declares it, so leaving this key
-undeployed means the `ask` rules below never fire. The script replaces
-`permissions` and leaves every other key, including `enabledPlugins`, untouched.
-`scripts/apply.sh` runs it after the Home Manager apply, and `cloud-setup.sh`
-runs it for cloud sessions.
+`scripts/sync-claude-settings.py` copies that file over the writable user
+settings instead. The repository is the source of truth and the script
+overwrites the whole file, so anything the CLI wrote in place is lost on the
+next run: after `claude plugin install` or a `/config` change, carry the new
+value back into `config/claude/settings.json` before applying again. Both
+scripts back the previous file up first. `scripts/apply.sh` runs it after the
+Home Manager apply, and `cloud-setup.sh` runs it for cloud sessions.
+
+Deploying the file is what makes permission rules work at all: a rule only
+takes effect when a settings file the session reads declares it, so an
+undeployed `ask` list never fires.
 
 ```sh
 scripts/apply.sh --dry-run

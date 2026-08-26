@@ -36,12 +36,16 @@ for skill_source in "$repo_root"/config/agents/skills/*/; do
   link "${skill_source%/}" "$claude_home/skills/$(basename "$skill_source")"
 done
 
-# permissions はシンボリックリンクにできない。settings.json は Claude 自身が
-# 書き換えるためで、リンクせずに該当キーだけを書き込む。これを省くと、公開系の
-# 操作に設定した ask ルールがクラウドセッションでは一切効かない。
+# settings.json はリンクにできない。Claude 自身が書き換えるファイルだからで、
+# 代わりに内容を複製する。これを省くと permissions が一切読まれず、公開系の
+# 操作に設定した ask ルールがクラウドセッションでは効かない。
+if [[ -f "$claude_home/settings.json" ]]; then
+  cp -p "$claude_home/settings.json" "$claude_home/settings.json.bak" &&
+    printf 'cloud-setup: backed up %s\n' "$claude_home/settings.json.bak"
+fi
 python3 "$repo_root/scripts/sync-claude-settings.py" \
   --source "$repo_root/config/claude/settings.json" \
   --target "$claude_home/settings.json" ||
-  printf 'cloud-setup: permissions の反映に失敗しました\n' >&2
+  printf 'cloud-setup: Claude ユーザー設定の反映に失敗しました\n' >&2
 
 exit 0

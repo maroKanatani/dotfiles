@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""config/claude/settings.json の permissions を、書き込み可能なユーザー設定へ反映する。
+"""config/claude/settings.json を、書き込み可能な Claude ユーザー設定へ複製する。
 
-`~/.claude/settings.json` は Claude のプラグインコマンドが直接書き換えるため、
-Home Manager の読み取り専用リンクにできない (README「Manage Claude Code and Codex」)。
-このスクリプトはユーザー設定を書き込み可能なまま保ち、permissions だけを差し替える。
-他のキーには触れない。
+Home Manager でリンクにはできない。Claude のプラグインコマンドや `/config` が
+`~/.claude/settings.json` を書き換えるためで、読み取り専用の Nix store リンクだと
+それらが失敗する。書き込み可能な実体を保ったまま、内容だけを揃える。
+
+リポジトリ側が正典であり、このスクリプトは全体を上書きする。ローカルで
+`claude plugin install` などを実行して設定が変わったら、その内容を
+config/claude/settings.json へ反映してから次回の適用を行う。
 
 Home Manager が届かないクラウドセッションでは cloud-setup.sh から呼ばれる。
 
@@ -33,6 +36,20 @@ def read_json(path: Path, default: dict | None = None) -> dict:
         raise SystemExit(f"error: {path} を読めません: {exc}") from exc
 
 
+def describe(before: dict, after: dict) -> str:
+    removed = sorted(set(before) - set(after))
+    added = sorted(set(after) - set(before))
+    changed = sorted(k for k in set(before) & set(after) if before[k] != after[k])
+    parts = []
+    if added:
+        parts.append(f"追加 {', '.join(added)}")
+    if changed:
+        parts.append(f"変更 {', '.join(changed)}")
+    if removed:
+        parts.append(f"削除 {', '.join(removed)}")
+    return " / ".join(parts) if parts else "差分なし"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="書き込まずに差分を表示する")
@@ -40,28 +57,26 @@ def main() -> int:
     parser.add_argument("--target", type=Path, default=DEFAULT_TARGET, help="ユーザー設定")
     args = parser.parse_args()
 
-    permissions = read_json(args.source).get("permissions")
-    if not permissions:
-        print(f"error: {args.source} に permissions がありません", file=sys.stderr)
+    source = read_json(args.source)
+    if not source:
+        print(f"error: {args.source} が空です", file=sys.stderr)
         return 1
 
     target = read_json(args.target, default={})
-    if target.get("permissions") == permissions:
+    if target == source:
         print("  変更なし (既に最新です)")
         return 0
 
+    summary = describe(target, source)
     if args.dry_run:
-        print("  --dry-run のため書き込みません。反映される permissions:")
-        print(json.dumps(permissions, ensure_ascii=False, indent=2))
+        print(f"  --dry-run のため書き込みません。{summary}")
         return 0
 
-    target["permissions"] = permissions
     args.target.parent.mkdir(parents=True, exist_ok=True)
     args.target.write_text(
-        json.dumps(target, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(source, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    counts = ", ".join(f"{k} {len(v)}件" for k, v in permissions.items() if isinstance(v, list))
-    print(f"  更新しました ({counts})")
+    print(f"  上書きしました。{summary}")
     return 0
 
 

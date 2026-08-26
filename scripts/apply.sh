@@ -66,7 +66,7 @@ sync_user_settings() {
     printf '==> バックアップ: %s\n' "$backup"
   fi
 
-  printf '==> Claude ユーザー設定へ permissions を反映: %s\n' "$target"
+  printf '==> Claude ユーザー設定を上書き: %s\n' "$target"
   local args=(--target "$target")
   [ "$dry_run" -eq 1 ] && args+=(--dry-run)
   python3 scripts/sync-claude-settings.py "${args[@]}" ||
