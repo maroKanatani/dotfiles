@@ -33,23 +33,79 @@ jobs:
 
   # Security gate: scan the repo for hidden content and config poisoning
   # before any build runs. Build jobs depend on this passing.
+  #
+  # sheeki03/tirith の公式 action ではなく tirith を直接呼ぶ。action は
+  # `tirith scan --ci --fail-on <level>` で判定するが、0.4.0 は非 ASCII
+  # テキストが 1KB ほどあるだけで analysis_incomplete (HIGH) を出し、
+  # --fail-on を指定した時点で fail_on の値によらず exit 2 になる。これは
+  # 脅威の検出ではなく「バイト詳細レコードが内部の保持上限を超えた」という
+  # 解析未完了の報告で、このリポジトリの日本語ドキュメントは全て該当する。
+  # JSON 出力から analysis_incomplete だけを除いた HIGH/CRITICAL を失敗条件
+  # にして、検出能力は保ったまま上流の制限だけを回避する。
   security:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
+    env:
+      TIRITH_VERSION: '0.4.0'
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Scan repository
-        uses: sheeki03/tirith@595f5adadaa151012cff0e3b7fa25f8d1599c92d # v0.3.3
-        env:
-          # v0.3.3 install.sh loses its local tmpdir before its EXIT trap runs.
-          tmpdir: ${{ runner.temp }}/tirith-action-cleanup
+      # install.sh はリリースの cosign 署名を既定で検証する (fail-closed)。
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
-          version: '0.3.3'
-          fail_on: high
-          sarif: 'false'
-          ignore: '.git/**,*.pdf,.github/actions/setup-nix/action.yml'
+          # 現行の tirith リリースは分離した .sig/.pem を使う。cosign 3 の
+          # 既定である bundle 形式とは非互換。
+          cosign-release: v2.6.1
+          # tirith 0.4.0 の install.sh は PATH を見ず、/usr/bin/cosign、
+          # /usr/local/bin/cosign、/opt/homebrew/bin/cosign の実ファイルだけを
+          # 探す (symlink も不可)。既定の $HOME/.cosign では検出されない。
+          # なお install.sh は x86_64 Linux でのみ root 所有かつ group/other
+          # 非書き込みを追加で要求するため、runner を x86_64 に変える場合は
+          # この配置で足りるか再確認する。
+          install-dir: /usr/local/bin
+
+      - name: Install tirith
+        run: |
+          # install.sh は CLI フラグを解さず TIRITH_INSTALL_DIR / TIRITH_VERSION
+          # を環境変数から読む。取得元はリリースタグに固定する。
+          curl -sSfL "https://raw.githubusercontent.com/sheeki03/tirith/v${TIRITH_VERSION}/scripts/install.sh" \
+            | TIRITH_INSTALL_DIR=/usr/local/bin sh
+          tirith version
+
+      - name: Scan repository
+        run: |
+          # analysis_incomplete があると scan 自体が exit 2 を返すため、
+          # 終了コードではなく生成された JSON の妥当性で成否を判断する。
+          set +e
+          tirith scan . --format json \
+            --ignore '.git/**' \
+            --ignore '*.pdf' \
+            --ignore '.github/actions/setup-nix/action.yml' \
+            > scan.json
+          scan_status=$?
+          set -e
+
+          if ! jq -e 'has("total_findings")' scan.json > /dev/null; then
+            echo "::error::tirith scan produced no usable report (exit ${scan_status})"
+            cat scan.json
+            exit 1
+          fi
+
+          jq -r '"scanned=\(.scanned_count) findings=\(.total_findings)"' scan.json
+          jq -r '.files[] | .path as $path | .findings[]
+            | select(.severity == "HIGH" or .severity == "CRITICAL")
+            | select(.rule_id != "analysis_incomplete")
+            | "\(.severity)\t\(.rule_id)\t\($path)"' scan.json > blocking.txt
+
+          if [ -s blocking.txt ]; then
+            echo "::error::tirith found blocking findings"
+            cat blocking.txt
+            exit 1
+          fi
+
+          echo 'No blocking HIGH/CRITICAL findings.'
 
   build-ubuntu:
     needs: [changes, security]

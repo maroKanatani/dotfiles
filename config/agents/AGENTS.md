@@ -112,5 +112,5 @@
 
 - コードの構造を把握したいだけのときは、`cat`や`Read`より先に`zat <file>`を使う。公開シンボルの署名と行番号を一覧表示する。
 - 出力の行番号を使い、必要な範囲だけを`Read(offset, limit)`で読む。
-- 対応言語はC、C++、C#、Go、Haskell、Java、JavaScript、Kotlin、Python、Ruby、Rust、Swift、TypeScript/TSX。未対応のファイルはexit code 1で終了する。
+- 対応言語はC、C++、C#、Go、Haskell、Java、JavaScript、Kotlin、Python、Ruby、Rust、Swift、TypeScript/TSXとする。未対応のファイルはexit code 1で終了する。
 - 複数ファイルを渡しても先頭1件しか処理しない(v0.5.3時点)。複数ファイルを見るときはファイルごとに呼び出す。
