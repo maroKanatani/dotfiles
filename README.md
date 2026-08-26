@@ -128,6 +128,25 @@ user settings active until a writable out-of-store adoption flow is selected.
 Do not duplicate these personal settings in a repository's
 `.claude/settings.json`; that path is project-scoped.
 
+`scripts/sync-claude-settings.py` copies one key out of that file into the
+writable user settings: `permissions`. A permission rule only takes effect when
+a settings file the session reads actually declares it, so leaving this key
+undeployed means the `ask` rules below never fire. The script replaces
+`permissions` and leaves every other key, including `enabledPlugins`, untouched.
+`scripts/apply.sh` runs it after the Home Manager apply, and `cloud-setup.sh`
+runs it for cloud sessions.
+
+```sh
+scripts/apply.sh --dry-run
+scripts/apply.sh
+```
+
+The `ask` list covers the operations that are visible to other people: pull
+request and issue comments, reviews, PR creation, merges, and `gh api`, which
+can reach all of them over REST. Claude executes them, but the harness prompts
+first, in every session and regardless of what Claude decides. `git push`,
+commits, and file edits stay in `allow` so unattended work is not interrupted.
+
 Codex's `config.toml` is also intentionally not managed because Codex currently
 stores both durable preferences and machine-local state in that file. The
 separately managed `config/codex/hooks.json` does not require taking ownership
