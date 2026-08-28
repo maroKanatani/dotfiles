@@ -37,9 +37,10 @@ for skill_source in "$repo_root"/config/agents/skills/*/; do
 done
 
 # Codex CLI は cloud VM に無いため npm で導入する。環境キャッシュに保存され、
-# 新規セッションでは再インストール不要。認証情報は環境変数にもキャッシュにも
-# 保存せず、セッション内で `codex login --device-auth` を実行する
-# (config/agents/skills/codex-review が案内する)。
+# 新規セッションでは再インストール不要。認証はここでは行わない。環境変数の
+# 更新でキャッシュが再構築される保証がないため、config/agents/skills/codex-review
+# がセッション内で CODEX_AUTH_JSON_B64 から auth.json を復元するか、無ければ
+# `codex login --device-auth` を案内する。
 codex_home="${HOME:-/root}/.codex"
 mkdir -p "$codex_home"
 link "$repo_root/config/agents/AGENTS.md" "$codex_home/AGENTS.md"

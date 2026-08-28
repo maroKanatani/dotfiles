@@ -12,9 +12,17 @@ Codex CLIを非対話モードで起動して対象の差分をレビューさ�
 1. `command -v codex`でCLIの有無を確認する。無い場合は環境別に案内して終了する。
    - cloudセッション: dotfilesの`scripts/cloud-setup.sh`がcloud環境のsetup scriptに登録されているか、環境キャッシュがスクリプト変更後に再構築されたかを利用者に確認してもらう。
    - ローカル: `npm install -g @openai/codex`等での導入を案内する。
-2. `codex login status`で認証状態を確認する。未認証の場合は`codex login --device-auth`をバックグラウンドで実行し、出力されるURLと確認コードをそのまま利用者へ提示して、利用者が手元のブラウザで承認するのを待つ。承認完了を`codex login status`で確認するまでレビューへ進まない。
+2. `codex login status`で認証状態を確認する。未認証の場合は次の順で認証する。
+   - 環境変数`CODEX_AUTH_JSON_B64`があれば、認証済みマシンの`auth.json`をbase64化したものなので復元する:
+
+     ```bash
+     mkdir -p ~/.codex && printf '%s' "$CODEX_AUTH_JSON_B64" | base64 -d > ~/.codex/auth.json && chmod 600 ~/.codex/auth.json
+     ```
+
+     復元後も`codex login status`が未認証ならトークン失効とみなし、利用者へ環境変数の再登録を案内したうえでdevice-authへ進む。
+   - 環境変数が無ければ`codex login --device-auth`をバックグラウンドで実行し、出力されるURLと確認コードをそのまま利用者へ提示して、利用者が手元のブラウザで承認するのを待つ。承認完了を`codex login status`で確認するまでレビューへ進まない。
    - この認証はChatGPTアカウントのサブスクリプション範囲で動作し、APIキーによる従量課金を使わない。
-   - `~/.codex/auth.json`は認証情報なので、内容の表示、環境変数への登録、コミットをしない。
+   - `auth.json`と環境変数の値は認証情報なので、内容を表示、ログ出力、コミットしない。
 
 ## レビュー実行
 
