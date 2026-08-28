@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code statusline script
-# Displays: folder path, repo|branch, context|model, 5h/7d usage, cost, worktree
+# Displays: folder path, repo|branch|PR, context|model, 5h/7d usage, cost, worktree
 
 input=$(cat)
 echo "$input" >> /tmp/statusline-debug.json
@@ -25,6 +25,18 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
   branch_name=$(git -C "$cwd" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || git -C "$cwd" --no-optional-locks rev-parse --short HEAD 2>/dev/null)
 fi
 
+# PR number for current branch (cached 5min, refreshed in background)
+pr_num=""
+if [ -n "$branch_name" ] && command -v gh > /dev/null 2>&1; then
+  repo_root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
+  cache="/tmp/statusline-pr-$(id -u)-$(printf '%s|%s' "$repo_root" "$branch_name" | tr -c 'A-Za-z0-9' '_')"
+  [ -f "$cache" ] && pr_num=$(cat "$cache")
+  if [ -z "$(find "$cache" -mmin -5 2>/dev/null)" ]; then
+    (cd "$repo_root" && gh pr view "$branch_name" --json number -q '.number // empty' > "$cache.tmp" 2>/dev/null
+     mv -f "$cache.tmp" "$cache" 2>/dev/null) < /dev/null > /dev/null 2>&1 &
+  fi
+fi
+
 # Progress bar
 progress_bar() {
   local pct=$1 width=20
@@ -45,7 +57,11 @@ printf '📁 %s\n' "$cwd"
 
 # Line 2: 🐙 repo | 🌿 branch
 if [ -n "$repo_name" ] && [ -n "$branch_name" ]; then
-  printf '🐙 %s | 🌿 %s\n' "$repo_name" "$branch_name"
+  if [ -n "$pr_num" ]; then
+    printf '🐙 %s | 🌿 %s | 🔀 #%s\n' "$repo_name" "$branch_name" "$pr_num"
+  else
+    printf '🐙 %s | 🌿 %s\n' "$repo_name" "$branch_name"
+  fi
 elif [ -n "$repo_name" ]; then
   printf '🐙 %s\n' "$repo_name"
 fi
