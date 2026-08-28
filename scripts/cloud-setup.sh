@@ -36,6 +36,18 @@ for skill_source in "$repo_root"/config/agents/skills/*/; do
   link "${skill_source%/}" "$claude_home/skills/$(basename "$skill_source")"
 done
 
+# Codex CLI は cloud VM に無いため npm で導入する。環境キャッシュに保存され、
+# 新規セッションでは再インストール不要。認証情報は環境変数にもキャッシュにも
+# 保存せず、セッション内で `codex login --device-auth` を実行する
+# (config/agents/skills/codex-review が案内する)。
+codex_home="${HOME:-/root}/.codex"
+mkdir -p "$codex_home"
+link "$repo_root/config/agents/AGENTS.md" "$codex_home/AGENTS.md"
+if ! command -v codex >/dev/null 2>&1; then
+  npm install -g @openai/codex ||
+    printf 'cloud-setup: Codex CLI のインストールに失敗しました\n' >&2
+fi
+
 # settings.json はリンクにできない。Claude 自身が書き換えるファイルだからで、
 # 代わりに内容を複製する。これを省くと permissions が一切読まれず、公開系の
 # 操作に設定した ask ルールがクラウドセッションでは効かない。
