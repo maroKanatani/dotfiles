@@ -176,6 +176,19 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(gh api * -X POST *)",
+            "prompt": "GitHubのPull Requestへレビューを投稿するコマンドかを判定する。pulls/<番号>/reviews または pulls/<番号>/comments へのPOSTでなければ、何も調べずに permissionDecision を skip にして返す。\n\n該当する場合は Read だけを使う。Bashやコマンド実行は一切行わない。~/.claude/skills/gh-handle-review/SKILL.md の「レビューする」節と、投稿本文（--input のJSONファイル、または -f body= の値）を Read で読み、本文がその節の全手順を満たすか判定する。prefixの選択が手順の判定基準に照らして妥当か、分量が上限内か、書かないとされているものが混ざっていないかを確認する。\n\n違反があれば permissionDecision を deny にし、permissionDecisionReason へ違反した手順番号と該当箇所を書く。違反がなければ allow を返す。\n\n$ARGUMENTS",
+            "timeout": 60
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
