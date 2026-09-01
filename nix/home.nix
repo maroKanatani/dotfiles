@@ -23,6 +23,12 @@ in
   home.file.".codex/rules/git-workflow.rules".source = ../config/codex/rules/git-workflow.rules;
   home.file.".claude/rules/common.md".source = ../config/agents/AGENTS.md;
   home.file.".claude/statusline-command.sh".source = ../config/claude/statusline-command.sh;
+  # settings.json の Stop hook が参照する通知音。recursive にして実ディレクトリを
+  # 作り、Herdr が ~/.claude/hooks/ へ自分のスクリプトを書けるようにする。
+  home.file.".claude/hooks" = {
+    source = ../config/claude/hooks;
+    recursive = true;
+  };
   home.file.".agents/skills" = {
     source = ../config/agents/skills;
     recursive = true;
