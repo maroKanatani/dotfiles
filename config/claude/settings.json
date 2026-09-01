@@ -16,7 +16,6 @@
       "Bash(grep:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(rm:*)",
       "Read(**)",
       "Edit(**)",
       "WebFetch(domain:*)",
