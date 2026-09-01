@@ -3,11 +3,11 @@
 # Displays: folder path, repo|branch|PR, context|model, 5h/7d usage, cost, worktree
 
 input=$(cat)
-echo "$input" >> /tmp/statusline-debug.json
 
 # Parse statusline JSON
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
+# rate_limits 側と同じ整数への整形。小数が来ると後続の $(( )) が構文エラーになる
+used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | awk '{printf "%d", $1}')
 model=$(echo "$input" | jq -r '.model.display_name // ""')
 pct_5h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // 0' | awk '{printf "%d", $1}')
 pct_7d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // 0' | awk '{printf "%d", $1}')
