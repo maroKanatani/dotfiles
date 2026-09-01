@@ -50,7 +50,6 @@
     "ask": [
       "Bash(git merge *)",
       "Bash(git pull *)",
-      "Bash(gh pr create *)",
       "Bash(gh api* -X DELETE*)",
       "Bash(gh api* --method DELETE*)",
       "Bash(gh pr merge:*)",
@@ -184,6 +183,12 @@
             "type": "command",
             "if": "Bash(gh api *)",
             "command": "\"$HOME/.claude/skills/gh-handle-review/check-review-post.sh\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(gh pr create*)",
+            "command": "\"$HOME/.claude/skills/gh-create-pr/check-pr-create.sh\"",
             "timeout": 10
           }
         ]
