@@ -135,6 +135,20 @@ next run: after `claude plugin install` or a `/config` change, carry the new
 value back into `config/claude/settings.json` before applying again. Both
 scripts back the previous file up first. `scripts/apply.sh` runs it after the
 Home Manager apply, and `cloud-setup.sh` runs it for cloud sessions.
+`nix run .#apply` never touches that file, so a removed setting only reaches
+the user settings through `scripts/apply.sh`.
+
+`scripts/apply.sh` also deletes skills that this repository no longer deploys
+but Home Manager leaves behind, because a leftover skill is loaded by every
+session from then on. Home Manager deletes only links it created itself, and
+its orphan sweep compares the previous generation with the new one exactly
+once, so a link it misses is never retried and a file written straight into
+`~/.claude/skills` was never a candidate. The latter happens repeatedly because
+the agents themselves write there. In `~/.claude/skills` every entry is either a
+current-generation link or a symlink to a skill outside the Nix store, so
+anything else is a leftover and is deleted; `~/.agents/skills` also holds Codex
+skills that predate this repository, so only missed links are deleted there.
+`scripts/test-apply-prune.sh` pins that classification.
 
 Deploying the file is what makes permission rules work at all: a rule only
 takes effect when a settings file the session reads declares it, so an
