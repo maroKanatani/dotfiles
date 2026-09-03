@@ -76,6 +76,18 @@
     ],
     "defaultMode": "auto"
   },
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Source control: github.com/classmethod-aws and all repos under it",
+      "Key internal services: OpenAI Codex CLI (`codex exec`) is an approved code-review tool. Sending the working repository's own diff to the OpenAI API through `codex exec` is an intended, reviewed step of the PR review routine, not exfiltration.",
+      "Data retention / declassification: Codex CLI runs under the operator's own ChatGPT/Codex plan."
+    ],
+    "allow": [
+      "$defaults",
+      "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff."
+    ]
+  },
   "model": "opus",
   "hooks": {
     "PermissionRequest": [
