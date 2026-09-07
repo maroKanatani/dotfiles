@@ -13,12 +13,15 @@ echo managed > "$gen/.claude/skills/managed/SKILL.md"
 ln -s "$root/gen" "$HOME/.local/state/home-manager/gcroots/current-home"
 
 mkdir -p "$HOME/.claude/skills/managed" "$HOME/.claude/skills/handwritten" \
-  "$HOME/.agents/skills/stale/agents" "$HOME/.agents/skills/pre-nix" "$root/other/external"
+  "$HOME/.agents/skills/stale/agents" "$HOME/.agents/skills/pre-nix" \
+  "$root/other/external"
 
 # 現行世代が管理しているリンク
 ln -s "$gen/.claude/skills/managed/SKILL.md" "$HOME/.claude/skills/managed/SKILL.md"
-# 別リポジトリの skill を指す store 外リンク
+# 別リポジトリの skill を指す、実在する store 外リンク
 ln -s "$root/other/external" "$HOME/.claude/skills/external"
+# 参照先が消えて読み込めなくなったリンク
+ln -s "$root/other/gone" "$HOME/.claude/skills/broken"
 # エージェントがリポジトリを経由せず直接書いたファイル
 echo handwritten > "$HOME/.claude/skills/handwritten/SKILL.md"
 # 孤児削除が取りこぼした旧世代リンク
@@ -46,9 +49,10 @@ check() {
 
 printf -- '--- 判定\n'
 check "現行世代のリンクは残る" '[ -L "$HOME/.claude/skills/managed/SKILL.md" ]'
-check "store 外へのリンクは残る" '[ -L "$HOME/.claude/skills/external" ]'
-check "直接書かれたファイルは消える" '[ ! -e "$HOME/.claude/skills/handwritten" ]'
-check "旧世代リンクは消える" '[ ! -L "$HOME/.agents/skills/stale/SKILL.md" ]'
-check "空になった親だけ畳まれる" '[ ! -d "$HOME/.agents/skills/stale" ] && [ -d "$HOME/.agents/skills" ]'
+check "実在する store 外リンクは残る" '[ -L "$HOME/.claude/skills/external" ]'
 check "リポジトリ以前の実体 skill は残る" '[ -f "$HOME/.agents/skills/pre-nix/SKILL.md" ]'
+check "壊れたリンクは消える" '[ ! -L "$HOME/.claude/skills/broken" ]'
+check "旧世代リンクは消える" '[ ! -L "$HOME/.agents/skills/stale/SKILL.md" ]'
+check "直接書かれたファイルは消える" '[ ! -e "$HOME/.claude/skills/handwritten" ]'
+check "空になった親だけ畳まれる" '[ ! -d "$HOME/.agents/skills/stale" ] && [ -d "$HOME/.agents/skills" ]'
 exit "$fails"

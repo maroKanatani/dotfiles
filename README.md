@@ -138,6 +138,22 @@ Home Manager apply, and `cloud-setup.sh` runs it for cloud sessions.
 `nix run .#apply` never touches that file, so a removed setting only reaches
 the user settings through `scripts/apply.sh`.
 
+`scripts/apply.sh` also deletes leftover skills, because every one of them is
+loaded by every session from then on. Home Manager cannot do it: it deletes
+only links it created itself, and its orphan sweep compares the previous
+generation with the new one exactly once, so a link it misses is never retried
+and a file written straight into `~/.claude/skills` was never a candidate. The
+latter keeps happening because the agents themselves write there. What survives
+is what the current generation manages, plus a symlink that resolves to a
+skill outside the Nix store. A link whose target is gone cannot be loaded as a
+skill, and a link into a store path the current generation does not use is what
+the sweep left behind; both are deleted. `~/.claude/skills` belongs to this
+repository, so a plain file there is deleted as well, while `~/.agents/skills`
+also holds Codex skills that predate this repository and keeps its plain files.
+`scripts/test-apply-prune.sh` pins that classification.
+`nix run .#apply` never touches that file, so a removed setting only reaches
+the user settings through `scripts/apply.sh`.
+
 `scripts/apply.sh` also deletes skills that this repository no longer deploys
 but Home Manager leaves behind, because a leftover skill is loaded by every
 session from then on. Home Manager deletes only links it created itself, and
