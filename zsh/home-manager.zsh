@@ -9,6 +9,13 @@ unset hm_session_vars
 
 if (( $+commands[mise] )); then
   eval "$(mise activate zsh)"
+  # activate は未インストールのバージョンを PATH から外すだけで、自動インストール
+  # しない。そのままだと .node-version の更新後に Homebrew の node へ落ちる。shims
+  # を先頭に置くと shim が必ず先に当たり、not_found_auto_install (既定 true) が
+  # その場でインストールして正しいバージョンを実行する。末尾では /opt/homebrew/bin
+  # に負けるので先頭であることが条件。
+  export PATH="$HOME/.local/share/mise/shims:$PATH"
+  rehash
 else
   export PATH="$HOME/.local/share/mise/shims:$PATH"
   rehash
