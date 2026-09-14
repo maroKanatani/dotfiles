@@ -2,10 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
-    "BASH_MAX_TIMEOUT_MS": "1200000",
-    "CLAUDE_CODE_THRIFTY_SONIC": "0",
-    "DISABLE_AUTOUPDATER": "0",
-    "ENABLE_TOOL_SEARCH": "true"
+    "BASH_MAX_TIMEOUT_MS": "1200000"
   },
   "permissions": {
     "allow": [
@@ -89,41 +86,8 @@
       "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff."
     ]
   },
-  "model": "opus",
+  "model": "fable",
   "hooks": {
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "matcher": "*",
@@ -149,14 +113,6 @@
             "command": "command -v afplay >/dev/null 2>&1 && [ -f \"$HOME/.claude/hooks/notification/completed.wav\" ] && afplay \"$HOME/.claude/hooks/notification/completed.wav\" || true"
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
-          }
-        ]
       }
     ],
     "SubagentStop": [
@@ -173,10 +129,6 @@
     "UserPromptSubmit": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$SUPERSET_HOME_DIR\" ] && [ -x \"$SUPERSET_HOME_DIR/hooks/notify.sh\" ] && \"$SUPERSET_HOME_DIR/hooks/notify.sh\" || true"
-          },
           {
             "type": "command",
             "command": "printf '%s' 'ツール実行より先に、この発話への返答（受け止めと、これからやること）を本文で書くこと。'"
@@ -213,11 +165,8 @@
     "command": "bash \"$HOME/.claude/statusline-command.sh\""
   },
   "enabledPlugins": {
-    "cc-caffeine@samber": false,
-    "claude-security@claude-plugins-official": false,
     "codex@openai-codex": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "code-review@claude-plugins-official": false,
     "ponytail@ponytail": true,
     "reviewable-html-workbench@reviewable-html-workbench-local": true,
     "show-me@skills": true,
@@ -262,9 +211,9 @@
       }
     }
   },
-  "outputStyle": "structured-reporting",
+  "outputStyle": "Concise",
   "language": "japanese",
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "tui": "fullscreen",
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
