@@ -1,6 +1,14 @@
 { config, pkgs, ... }:
 let
   packages = import ./packages.nix { inherit pkgs; };
+  # 日本語の文書作成・推敲Skill。既存の日本語文章Skillを置き換えるため、
+  # 外部リポジトリをcommit固定で取り込む。
+  naturalJapanese = pkgs.fetchFromGitHub {
+    owner = "coji";
+    repo = "natural-japanese";
+    rev = "21e632661a910bf97289c501089ad11eb8b4d85f"; # v1.5.0
+    hash = "sha256-2haz6fzdiUlUkzzmyxIEzIAFCig3we54sb01RX5zD0c=";
+  };
 in
 {
   home.stateVersion = "26.05";
@@ -44,6 +52,10 @@ in
     "${packages.herdr}/share/herdr/skills/herdr/SKILL.md";
   home.file.".claude/skills/herdr/SKILL.md".source =
     "${packages.herdr}/share/herdr/skills/herdr/SKILL.md";
+  home.file.".agents/skills/natural-japanese".source =
+    "${naturalJapanese}/skills/natural-japanese";
+  home.file.".claude/skills/natural-japanese".source =
+    "${naturalJapanese}/skills/natural-japanese";
   home.file.".docker/cli-plugins/docker-buildx".source =
     "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";
   home.file.".docker/cli-plugins/docker-compose".source =
