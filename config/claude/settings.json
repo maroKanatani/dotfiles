@@ -73,6 +73,12 @@
       "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff.",
       "Force-pushing with `git push --force-with-lease` is allowed for a feature or PR branch that the agent created, checked out for its own work, or the user named, when a `git rebase` or `git pull --rebase` of that branch is visible earlier in the session. Bare `--force`, the default branch, and branches named like release/*, deploy, production or gh-pages are not covered. Content rules still apply to the pushed commits.",
       "Creating Draft pull requests and updating labels, assignees, reviewers, title and body of pull requests or issues in repositories under github.com/classmethod-aws is allowed, through `gh` or the GitHub MCP tools create_pull_request, update_pull_request and issue_write, including items not created this session and across several repositories in one session. Posting review comments and PR comments through `gh api` or the GitHub MCP comment/review tools is allowed the same way. This covers the write operation, not its content: PR, issue and comment bodies are still judged for sensitive detail. Calls that set `state: closed`, `draft: false`, approve a review or merge are not covered."
+    ],
+    "soft_deny": [
+      "$defaults",
+      "PR Merge [named+specifics — must name: the PR being merged]: Merging any pull request by any means (`gh pr merge`, the GitHub MCP tool merge_pull_request, or the REST API), regardless of review or check state. The user's workflow never merges from the agent. Clears only when the user asked in this session to merge that specific PR.",
+      "PR/Issue State Change [named+specifics — must name: the item and the state change]: Marking a pull request Ready for review (`gh pr ready`, `draft: false`), or closing or reopening a pull request or issue (`gh pr close`, `gh issue close`, `state: closed`/`open`), including items the agent created this session. Clears only when the user asked for that change to that item.",
+      "Remote Deletion via API [named+specifics — must name: the remote resource being deleted]: `gh api` with `-X DELETE` or `--method DELETE`, and GitHub MCP or REST calls that delete remote comments, reviews, labels, branches or other resources, including ones the agent created this session. Clears only when the user named the target in this session."
     ]
   },
   "model": "fable",
