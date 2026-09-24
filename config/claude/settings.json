@@ -45,21 +45,6 @@
       "Bash(which:*)",
       "Bash(test:*)"
     ],
-    "ask": [
-      "Bash(git merge *)",
-      "Bash(git pull *)",
-      "Bash(gh api* -X DELETE*)",
-      "Bash(gh api* --method DELETE*)",
-      "Bash(gh pr merge:*)",
-      "mcp__github__add_comment_to_pending_review",
-      "mcp__github__add_issue_comment",
-      "mcp__github__add_reply_to_pull_request_comment",
-      "mcp__github__create_pull_request",
-      "mcp__github__issue_write",
-      "mcp__github__merge_pull_request",
-      "mcp__github__pull_request_review_write",
-      "mcp__github__update_pull_request"
-    ],
     "deny": [
       "Bash(rm -rf ~/**)",
       "Bash(rm -rf //**)",
@@ -79,11 +64,15 @@
       "$defaults",
       "Source control: github.com/classmethod-aws and all repos under it",
       "Key internal services: OpenAI Codex CLI (`codex exec`) is an approved code-review tool. Sending the working repository's own diff to the OpenAI API through `codex exec` is an intended, reviewed step of the PR review routine, not exfiltration.",
-      "Data retention / declassification: Codex CLI runs under the operator's own ChatGPT/Codex plan."
+      "Data retention / declassification: Codex CLI runs under the operator's own ChatGPT/Codex plan.",
+      "Git workflow: rebase-based. Feature branches are synced with `git fetch` + `git rebase` / `git pull --rebase` and then force-pushed with `git push --force-with-lease` to their own remote branch; merge commits and merge-style pulls are not used. The default branch and deploy/release branches are never force-pushed.",
+      "GitHub workflow: pull requests are created as Draft, then labels and assignees are set and the PR is read back to verify base/head/draft state. The same work is done across several repositories under github.com/classmethod-aws in one session, through either the `gh` CLI or the GitHub MCP server (create_pull_request, update_pull_request, issue_write, review comments). Marking Ready for review, closing, merging and approving reviews are not part of the routine and follow the user's explicit instruction."
     ],
     "allow": [
       "$defaults",
-      "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff."
+      "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff.",
+      "Force-pushing with `git push --force-with-lease` is allowed for a feature or PR branch that the agent created, checked out for its own work, or the user named, when a `git rebase` or `git pull --rebase` of that branch is visible earlier in the session. Bare `--force`, the default branch, and branches named like release/*, deploy, production or gh-pages are not covered. Content rules still apply to the pushed commits.",
+      "Creating Draft pull requests and updating labels, assignees, reviewers, title and body of pull requests or issues in repositories under github.com/classmethod-aws is allowed, through `gh` or the GitHub MCP tools create_pull_request, update_pull_request and issue_write, including items not created this session and across several repositories in one session. Posting review comments and PR comments through `gh api` or the GitHub MCP comment/review tools is allowed the same way. This covers the write operation, not its content: PR, issue and comment bodies are still judged for sensitive detail. Calls that set `state: closed`, `draft: false`, approve a review or merge are not covered."
     ]
   },
   "model": "fable",
