@@ -44,6 +44,9 @@ mkdir -p "$claude_home/rules" "$claude_home/skills" "$claude_home/hooks/notifica
 link "$repo_root/config/agents/AGENTS.md" "$claude_home/rules/common.md"
 link "$repo_root/config/agents/AGENTS.md" "$codex_home/AGENTS.md"
 
+# Claude Code の rules。pstack のモデル設定は /pstack:setup-pstack の生成物を原本として取り込んだもの
+link "$repo_root/config/claude/rules/pstack-models.md" "$claude_home/rules/pstack-models.md"
+
 # Skill は1つずつリンクする。管理外の skill が同じディレクトリに共存できるようにするため。
 for skill_source in "$repo_root"/config/agents/skills/*/; do
   link "${skill_source%/}" "$claude_home/skills/$(basename "$skill_source")"

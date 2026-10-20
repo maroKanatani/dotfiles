@@ -90,6 +90,7 @@ it for Claude Code.
 | Source | Target |
 |---|---|
 | `config/agents/AGENTS.md` | `~/.claude/rules/common.md`, `~/.codex/AGENTS.md` |
+| `config/claude/rules/pstack-models.md` | `~/.claude/rules/pstack-models.md` |
 | `config/agents/skills/<name>/` | `~/.claude/skills/<name>`, `~/.agents/skills/<name>` |
 | `config/claude/statusline-command.sh` | `~/.claude/statusline-command.sh` |
 | `config/claude/hooks/notification/completed.wav` | `~/.claude/hooks/notification/completed.wav` |
@@ -225,13 +226,15 @@ have to be declared in the target repository's project settings.
 
 ### Adopted AI plugins
 
-Ponytail, Reviewable HTML Workbench, show-me, ELI5, and Matt Pocock's skills
-are installed from their upstream marketplaces. Use the host CLIs instead of
+pstack, Reviewable HTML Workbench, show-me, ELI5, and Matt Pocock's skills
+are installed from their upstream marketplaces. Ponytail was replaced by
+pstack, whose `principle-laziness-protocol` covers the same ground, and is
+kept disabled in `enabledPlugins`. Use the host CLIs instead of
 copying their Skills or hooks into this repository:
 
 ```sh
-codex plugin marketplace add DietrichGebert/ponytail
-codex plugin add ponytail@ponytail
+codex plugin marketplace add cursor/plugins
+codex plugin add pstack@cursor-plugins
 codex plugin marketplace add u-ichi/reviewable-html-workbench
 codex plugin add reviewable-html-workbench@reviewable-html-workbench-local
 codex plugin marketplace add humanlayer/skills
@@ -241,8 +244,8 @@ codex plugin add eli5@claude-community
 codex plugin marketplace add anthropics/claude-plugins-official
 codex plugin add mattpocock-skills@claude-plugins-official
 
-claude plugin marketplace add DietrichGebert/ponytail
-claude plugin install ponytail@ponytail
+claude plugin marketplace add cursor/plugins
+claude plugin install pstack@cursor-plugins
 claude plugin marketplace add u-ichi/reviewable-html-workbench
 claude plugin install reviewable-html-workbench
 claude plugin marketplace add humanlayer/skills
@@ -253,10 +256,15 @@ claude plugin marketplace add anthropics/claude-plugins-official
 claude plugin install mattpocock-skills@claude-plugins-official
 ```
 
-After installing Ponytail in Codex, start `codex`, open `/hooks`, review and
-trust the plugin hooks, and then start a new thread. Start a new Claude Code
-session after either plugin changes. Node.js must be available to non-interactive
-hooks for Ponytail, and Reviewable HTML Workbench requires Python 3.11 or later.
+Start a new Claude Code session after either plugin changes. Reviewable HTML
+Workbench requires Python 3.11 or later.
+
+pstack reads its per-role model choices from `~/.claude/rules/pstack-models.md`.
+The tracked copy under `config/claude/rules/` is the source of truth and is
+linked by the deploy script, so cloud sessions get the same mapping. To change
+it, run `/pstack:setup-pstack`, then copy the written file back into the
+repository. In Claude Code the skills are namespaced, so `/poteto-mode` is
+`/pstack:poteto-mode`.
 
 Twenty-five skills arrive with `mattpocock-skills`, eleven of them
 model-invoked, so those fire on their own whenever a task matches. Two overlaps
