@@ -162,11 +162,12 @@
   "enabledPlugins": {
     "codex@openai-codex": true,
     "rust-analyzer-lsp@claude-plugins-official": false,
-    "ponytail@ponytail": true,
+    "ponytail@ponytail": false,
     "reviewable-html-workbench@reviewable-html-workbench-local": false,
     "show-me@skills": false,
     "eli5@claude-community": true,
-    "mattpocock-skills@claude-plugins-official": true
+    "mattpocock-skills@claude-plugins-official": true,
+    "pstack@cursor-plugins": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -203,6 +204,12 @@
       "source": {
         "source": "github",
         "repo": "anthropics/claude-plugins-community"
+      }
+    },
+    "cursor-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "cursor/plugins"
       }
     }
   },
