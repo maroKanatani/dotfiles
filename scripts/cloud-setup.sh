@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-# Deploy the shared agent configuration into a Claude Code cloud session VM.
-# Cloud sessions read only the cloned repository and the VM's own home
-# directory, so the Home Manager links in nix/home.nix never reach them.
-# Register the bootstrap command in the cloud environment's setup script field:
+# Claude Code のクラウドセッション VM 向けの起動スクリプト。配布本体は
+# scripts/deploy-agent-config.sh で、ここではクラウドにしかない作業だけを足す。
+# クラウド環境の Setup script 欄に次を登録する:
 #
 #   git clone --depth 1 https://github.com/maroKanatani/dotfiles.git /opt/dotfiles
 #   bash /opt/dotfiles/scripts/cloud-setup.sh
@@ -12,53 +11,17 @@
 set -uo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-claude_home="${HOME:-/root}/.claude"
 
-link() {
-  local source_path="$1"
-  local target_path="$2"
-
-  if [[ -e "$target_path" && ! -L "$target_path" ]]; then
-    printf 'cloud-setup: kept existing path: %s\n' "$target_path" >&2
-    return
-  fi
-
-  ln -sfn "$source_path" "$target_path"
-  printf 'cloud-setup: linked %s -> %s\n' "$target_path" "$source_path"
-}
-
-mkdir -p "$claude_home/rules" "$claude_home/skills"
-link "$repo_root/config/agents/AGENTS.md" "$claude_home/rules/common.md"
-
-# Link each skill individually so unmanaged skills in the session image can
-# coexist, matching the recursive Home Manager deployment.
-for skill_source in "$repo_root"/config/agents/skills/*/; do
-  link "${skill_source%/}" "$claude_home/skills/$(basename "$skill_source")"
-done
+bash "$repo_root/scripts/deploy-agent-config.sh"
 
 # Codex CLI は cloud VM に無いため npm で導入する。環境キャッシュに保存され、
 # 新規セッションでは再インストール不要。認証はここでは行わない。環境変数の
 # 更新でキャッシュが再構築される保証がないため、config/agents/skills/codex-review
 # がセッション内で CODEX_AUTH_JSON_B64 から auth.json を復元するか、無ければ
 # `codex login --device-auth` を案内する。
-codex_home="${HOME:-/root}/.codex"
-mkdir -p "$codex_home"
-link "$repo_root/config/agents/AGENTS.md" "$codex_home/AGENTS.md"
 if ! command -v codex >/dev/null 2>&1; then
   npm install -g @openai/codex ||
     printf 'cloud-setup: Codex CLI のインストールに失敗しました\n' >&2
 fi
-
-# settings.json はリンクにできない。Claude 自身が書き換えるファイルだからで、
-# 代わりに内容を複製する。これを省くと permissions が一切読まれず、公開系の
-# 操作に設定した ask ルールがクラウドセッションでは効かない。
-if [[ -f "$claude_home/settings.json" ]]; then
-  cp -p "$claude_home/settings.json" "$claude_home/settings.json.bak" &&
-    printf 'cloud-setup: backed up %s\n' "$claude_home/settings.json.bak"
-fi
-python3 "$repo_root/scripts/sync-claude-settings.py" \
-  --source "$repo_root/config/claude/settings.json" \
-  --target "$claude_home/settings.json" ||
-  printf 'cloud-setup: Claude ユーザー設定の反映に失敗しました\n' >&2
 
 exit 0

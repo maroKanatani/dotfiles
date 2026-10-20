@@ -220,5 +220,13 @@
     "herdr": "off",
     "x-fetch-post": "off",
     "reader-centered-communication": "off"
+  },
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium"
+    }
   }
 }
