@@ -9,7 +9,7 @@ Home Manager でリンクにはできない。Claude のプラグインコマン
 `claude plugin install` などを実行して設定が変わったら、その内容を
 config/claude/settings.json へ反映してから次回の適用を行う。
 
-Home Manager が届かないクラウドセッションでは cloud-setup.sh から呼ばれる。
+ローカルでもクラウドセッションでも scripts/deploy-agent-config.sh から呼ばれる。
 
     python3 scripts/sync-claude-settings.py [--dry-run] [--source PATH] [--target PATH]
 
@@ -20,12 +20,13 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Optional
 
 DEFAULT_SOURCE = Path(__file__).resolve().parent.parent / "config/claude/settings.json"
 DEFAULT_TARGET = Path.home() / ".claude/settings.json"
 
 
-def read_json(path: Path, default: dict | None = None) -> dict:
+def read_json(path: Path, default: Optional[dict] = None) -> dict:
     if not path.exists():
         if default is None:
             raise SystemExit(f"error: {path} が見つかりません")

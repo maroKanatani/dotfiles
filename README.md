@@ -15,9 +15,25 @@ information in the repository.
 - `config/agents/skills/`: curated shared Agent Skills sources
 - `config/claude/`: Claude Code user settings and managed assets
 - `config/codex/`: Codex settings that can be managed independently of runtime state
+- `scripts/`: apply, deploy, and check scripts; `deploy-agent-config.sh` is the single agent-configuration path
 
 No username or home-directory path is stored in this repository, and the Nix
 expressions do not use an impure environment lookup.
+
+## Design
+
+Nix declares the tools installed on this machine. Agent configuration is kept
+in this repository as the source of truth and deployed, on every environment,
+by one script that links the checkout into the home directory. State that a
+CLI rewrites itself is either overwritten from a repository copy or left to a
+documented manual procedure.
+
+| Concern | Managed by | Why |
+|---|---|---|
+| Packages, mise, zsh, gh extensions, Docker plugins | `nix/home.nix` | Only this machine needs them; reproducible versions matter |
+| `AGENTS.md`, Skills, hooks, status line, Codex rules | `scripts/deploy-agent-config.sh` | Needed on the local machine and on cloud VMs, which have no Nix |
+| `~/.claude/settings.json` | same script, copied | Claude writes the file in place, so it cannot be a link |
+| Plugins, Codex `config.toml`, authentication | manual, see below | Generated and updated by the CLIs themselves |
 
 ## Install managed packages
 
@@ -65,126 +81,91 @@ flakes that want to compose it.
 
 ## Manage Claude Code and Codex
 
-User-level shared instructions live in `config/agents/AGENTS.md`. Home Manager
-deploys the same source as `~/.codex/AGENTS.md` for Codex and
-`~/.claude/rules/common.md` for Claude Code. This repository's own instructions
-live in the root `AGENTS.md`; `CLAUDE.md` imports it for Claude Code.
+User-level shared instructions live in `config/agents/AGENTS.md`. This
+repository's own instructions live in the root `AGENTS.md`; `CLAUDE.md` imports
+it for Claude Code.
 
-Codex command policies live in `config/codex/rules/` and are deployed to
-`~/.codex/rules/`. They prompt before merge, pull, and PR creation commands;
-the corresponding Agent Skills define the preferred workflow and output.
+`scripts/deploy-agent-config.sh` links the checkout into the home directory:
 
-Reusable workflows follow the Agent Skills layout under
-`config/agents/skills/`. Keeping the source outside a discovery directory
-avoids loading the same skill once from this repository and again from the
-user-level path.
+| Source | Target |
+|---|---|
+| `config/agents/AGENTS.md` | `~/.claude/rules/common.md`, `~/.codex/AGENTS.md` |
+| `config/agents/skills/<name>/` | `~/.claude/skills/<name>`, `~/.agents/skills/<name>` |
+| `config/claude/statusline-command.sh` | `~/.claude/statusline-command.sh` |
+| `config/claude/hooks/notification/completed.wav` | `~/.claude/hooks/notification/completed.wav` |
+| `config/codex/hooks.json`, `config/codex/rules/*.rules` | `~/.codex/hooks.json`, `~/.codex/rules/` |
+| `config/claude/settings.json` | `~/.claude/settings.json` (copied, not linked) |
 
-Home Manager exposes the same sources at both `~/.agents/skills/` for Codex and
-`~/.claude/skills/` for Claude Code. The target directories are populated
-recursively so unmanaged, product-specific skills can coexist with the managed
-skills.
+Skills are linked one by one so unmanaged, product-specific skills can coexist
+in the same directories. An existing regular file or non-empty directory at a
+target is kept and reported instead of replaced. Because the links point at the
+checkout, an edit in this repository takes effect in the next session without
+re-running the script; only a new skill directory or a changed `settings.json`
+needs another run.
 
-An optional `agents/openai.yaml` customizes OpenAI's skill UI and default
-prompt; the workflow itself remains in `SKILL.md`.
-
-The curated set contains only focused workflows that are actively maintained;
-see `config/agents/skills/` for the current set.
-
-Skills maintained in another repository are vendored with `gh skill`, which
-copies the upstream `SKILL.md` into `config/agents/skills/` and records the
-source repository, ref, and tree SHA in its front matter:
-
-```bash
-gh skill install github/gh-stack gh-stack --pin main --dir config/agents/skills --force
-```
-
-Home Manager deploys the vendored copy like any curated skill. Rerun the same
-command to refresh it from `main`; the pin prevents `gh skill update` from
-replacing it with the latest tagged release.
-`gh skill` does not verify skill contents, so read the file before committing
-it. Prefer a copy that a package already ships, as the Herdr skill below shows.
-
-The Herdr skill is not curated here. Herdr ships it inside its own package at
-`share/herdr/skills/herdr/SKILL.md`, and Home Manager deploys that file to
-`~/.agents/skills/herdr/SKILL.md` and `~/.claude/skills/herdr/SKILL.md`. The
-skill therefore always describes the `herdr` binary that is actually installed,
-which matters because the skill instructs the agent to treat the installed CLI
-as the authority for command syntax. It follows the package version, so
-`nix flake update nixpkgs` updates the binary and the skill together.
-
-Do not install it with `npx skills add herdrdev/herdr --skill herdr -g` and do
-not copy the upstream file into `config/agents/skills/`. Both write a second,
-independently versioned copy into a path Home Manager already owns.
-
-Domain-specific business knowledge is managed outside this repository and is
-not included in the shared set. Add a new skill only when a repeated task needs
-specialized knowledge, a deterministic script, or a stable output contract.
-
-The complete Claude Code user settings are preserved in
-`config/claude/settings.json`. Home Manager does not deploy this file yet:
-Claude's plugin commands update the user settings in place, while a normal Home
-Manager source would be a read-only Nix store link. Keep the existing writable
-user settings active until a writable out-of-store adoption flow is selected.
-Do not duplicate these personal settings in a repository's
-`.claude/settings.json`; that path is project-scoped.
-
-`scripts/sync-claude-settings.py` copies that file over the writable user
-settings instead. The repository is the source of truth and the script
-overwrites the whole file, so anything the CLI wrote in place is lost on the
-next run: after `claude plugin install` or a `/config` change, carry the new
-value back into `config/claude/settings.json` before applying again. Both
-scripts back the previous file up first. `scripts/apply.sh` runs it after the
-Home Manager apply, and `cloud-setup.sh` runs it for cloud sessions.
-`nix run .#apply` never touches that file, so a removed setting only reaches
-the user settings through `scripts/apply.sh`.
-
-`scripts/apply.sh` also deletes leftover skills, because every one of them is
-loaded by every session from then on. Home Manager cannot do it: it deletes
-only links it created itself, and its orphan sweep compares the previous
-generation with the new one exactly once, so a link it misses is never retried
-and a file written straight into `~/.claude/skills` was never a candidate. The
-latter keeps happening because the agents themselves write there. What survives
-is what the current generation manages, plus a symlink that resolves to a
-skill outside the Nix store. A link whose target is gone cannot be loaded as a
-skill, and a link into a store path the current generation does not use is what
-the sweep left behind; both are deleted. `~/.claude/skills` belongs to this
-repository, so a plain file there is deleted as well, while `~/.agents/skills`
-also holds Codex skills that predate this repository and keeps its plain files.
-`scripts/test-apply-prune.sh` pins that classification.
-`nix run .#apply` never touches that file, so a removed setting only reaches
-the user settings through `scripts/apply.sh`.
-
-`scripts/apply.sh` also deletes skills that this repository no longer deploys
-but Home Manager leaves behind, because a leftover skill is loaded by every
-session from then on. Home Manager deletes only links it created itself, and
-its orphan sweep compares the previous generation with the new one exactly
-once, so a link it misses is never retried and a file written straight into
-`~/.claude/skills` was never a candidate. The latter happens repeatedly because
-the agents themselves write there. In `~/.claude/skills` every entry is either a
-current-generation link or a symlink to a skill outside the Nix store, so
-anything else is a leftover and is deleted; `~/.agents/skills` also holds Codex
-skills that predate this repository, so only missed links are deleted there.
-`scripts/test-apply-prune.sh` pins that classification.
-
-Deploying the file is what makes permission rules work at all: a rule only
-takes effect when a settings file the session reads declares it, so an
-undeployed `ask` list never fires.
+Locally `scripts/apply.sh` runs the Home Manager apply, deletes leftover
+skills, and then runs the deploy script. The same deploy script is what
+`scripts/cloud-setup.sh` runs on a cloud VM, so both environments receive the
+same files from the same source.
 
 ```sh
 scripts/apply.sh --dry-run
 scripts/apply.sh
 ```
 
-The `ask` list covers the operations that are visible to other people: pull
-request and issue comments, reviews, PR creation, merges, and `gh api`, which
-can reach all of them over REST. Claude executes them, but the harness prompts
-first, in every session and regardless of what Claude decides. `git push`,
-commits, and file edits stay in `allow` so unattended work is not interrupted.
+Reusable workflows follow the Agent Skills layout under
+`config/agents/skills/`. Keeping the source outside a discovery directory
+avoids loading the same skill once from this repository and again from the
+user-level path. An optional `agents/openai.yaml` customizes OpenAI's skill UI
+and default prompt; the workflow itself remains in `SKILL.md`.
 
-Codex's `config.toml` is also intentionally not managed because Codex currently
-stores both durable preferences and machine-local state in that file. The
-separately managed `config/codex/hooks.json` does not require taking ownership
-of `config.toml`.
+Skills maintained in another repository are vendored with `gh skill`, which
+copies the upstream skill into `config/agents/skills/` and records the source
+repository, ref, and tree SHA in its front matter:
+
+```bash
+gh skill install github/gh-stack gh-stack --pin main --dir config/agents/skills --force
+gh skill install nanaism/yomiyasu skills/yomiyasu --pin <commit> --dir config/agents/skills --force
+```
+
+The deploy script links the vendored copy like any curated skill, so it reaches
+cloud sessions as well. Rerun the same command to refresh it. `gh skill` does
+not verify skill contents, so read the files before committing them. Do not
+fetch a skill through `nix/home.nix` instead: a Nix-only source never reaches a
+cloud session.
+
+Herdr ships a skill inside its own package, but it is not deployed: the binary
+is absent from cloud VMs and the skill is disabled locally through
+`skillOverrides`. If it is wanted again, vendor it with `gh skill install`.
+
+Domain-specific business knowledge is managed outside this repository and is
+not included in the shared set. Add a new skill only when a repeated task needs
+specialized knowledge, a deterministic script, or a stable output contract.
+
+`config/claude/settings.json` is the source of truth for the Claude Code user
+settings. `scripts/sync-claude-settings.py` overwrites the writable user file
+with it, after backing the previous file up. Anything the CLI wrote in place is
+lost on the next run: after `claude plugin install` or a `/config` change,
+carry the new value back into `config/claude/settings.json` before applying
+again. Do not duplicate these personal settings in a repository's
+`.claude/settings.json`; that path is project-scoped.
+
+Deploying the file is what makes permission rules work at all: a rule only
+takes effect when a settings file the session reads declares it. Permission
+decisions are delegated to auto mode; `autoMode.soft_deny` keeps merges,
+Ready-for-review, close, and remote deletions behind an explicit user
+instruction, while commits, pushes, Draft PRs, and file edits run unattended.
+
+`scripts/apply.sh` also deletes leftover skills, because every one of them is
+loaded by every session from then on. In `~/.claude/skills` every entry is
+either a symlink to an existing path outside the Nix store or a leftover: a
+broken link, a link into any store path, or a file an agent wrote there
+directly. All leftovers are deleted. `~/.agents/skills` also holds Codex skills
+that predate this repository, so only links are deleted there.
+`scripts/test-apply-prune.sh` pins that classification.
+
+Codex's `config.toml` is intentionally not managed because Codex currently
+stores both durable preferences and machine-local state in that file.
 
 Authentication, histories, caches, sessions, memories, project trust entries,
 marketplace refresh timestamps, and generated hook trust hashes are not part of
@@ -194,14 +175,9 @@ Before applying the configuration, run the checks and a Home Manager dry run:
 
 ```sh
 scripts/check-agent-config.sh
-nix run .#apply -- --dry-run
+scripts/test-apply-prune.sh
+scripts/apply.sh --dry-run
 ```
-
-The Home Manager entries do not use `force`. If a legacy file or symlink is
-already present, activation stops rather than replacing it. Compare the legacy
-target with the corresponding source in this repository and preserve a backup
-before adopting the managed path. A normal apply should only be run after the
-dry run reports no unexpected collision.
 
 Claude and Codex hooks retain optional integrations with Superset and Herdr.
 The `herdr` binary itself is part of the Nix package catalog, but the hook
@@ -216,8 +192,9 @@ routines, run on a fresh VM. They read the cloned repository, that VM's own home
 directory, and the cloud environment configuration; the Home Manager links on a
 local machine never reach them.
 
-`scripts/cloud-setup.sh` deploys the same shared sources into the session VM.
-Register the bootstrap in the **Setup script** field of the cloud environment at
+`scripts/cloud-setup.sh` runs the same `scripts/deploy-agent-config.sh` inside
+the session VM and then installs the Codex CLI. Register the bootstrap in the
+**Setup script** field of the cloud environment at
 [claude.ai/code](https://claude.ai/code):
 
 ```sh
@@ -236,10 +213,11 @@ resulting filesystem is reused for roughly seven days. A change in this
 repository therefore reaches new sessions after the cache is rebuilt; editing
 the environment's setup script field rebuilds it immediately.
 
-`config/claude/settings.json` is not deployed to a cloud session. Its hooks,
-status line, and output style depend on the local machine, and user-scoped
-`enabledPlugins` is not applied there; plugins for a cloud session have to be
-declared in the target repository's project settings.
+`config/claude/settings.json` is deployed to a cloud session too, so the same
+permission and auto-mode rules apply there. The status line, the notification
+sound, and the Herdr hook depend on local tools and fail silently on the VM.
+User-scoped `enabledPlugins` is not applied there; plugins for a cloud session
+have to be declared in the target repository's project settings.
 
 ### Adopted AI plugins
 
