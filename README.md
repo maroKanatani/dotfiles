@@ -221,8 +221,11 @@ the environment's setup script field rebuilds it immediately.
 `config/claude/settings.json` is deployed to a cloud session too, so the same
 permission and auto-mode rules apply there. The status line, the notification
 sound, and the Herdr hook depend on local tools and fail silently on the VM.
-User-scoped `enabledPlugins` is not applied there; plugins for a cloud session
-have to be declared in the target repository's project settings.
+User-scoped `enabledPlugins` is not applied there, and a cloud session does not
+install plugins even when a repository declares them, so pstack is linked into
+`~/.claude/skills` and `~/.claude/agents` by `scripts/cloud-setup.sh` from a
+clone of `cursor/plugins` instead. Its skills have no `pstack:` prefix there:
+type `/poteto-mode`, not `/pstack:poteto-mode`. The other plugins are local only.
 
 ### Adopted AI plugins
 
