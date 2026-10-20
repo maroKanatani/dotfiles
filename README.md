@@ -131,9 +131,10 @@ gh skill install nanaism/yomiyasu skills/yomiyasu --pin <commit> --dir config/ag
 The deploy script links the vendored copy like any curated skill, so it reaches
 cloud sessions as well. Rerun the same command to refresh it. `gh skill` does
 not verify skill contents, so read the files before committing them. The CI
-security scan (tirith) flags an ASCII word directly followed by `。` as a
-confusable, so `Agent Skill。` in the yomiyasu description is changed to
-`Agent Skillである。` after every refresh. Do not
+security scan (tirith) flags an ASCII word directly followed by an ideographic
+full stop as a confusable, so after every refresh of yomiyasu insert である
+between "Agent Skill" and the full stop that ends the first sentence of its
+description. Do not
 fetch a skill through `nix/home.nix` instead: a Nix-only source never reaches a
 cloud session.
 
