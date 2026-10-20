@@ -16,14 +16,15 @@ description: "指定期間・指定リポジトリのGitHub活動を収集し、
 ## 手順
 
 1. 対象期間、リポジトリ、報告対象を確認する。
-2. このSkillのルートで収集スクリプトを実行し、JSONを一時ファイルへ保存する。
+2. このSkillのルートで収集スクリプトを実行し、JSONを`mktemp`で作成した一時ファイルへ保存する。固定名の`/tmp`パスは同期間の再実行や他利用者の先回り作成と衝突するため使わない。
 
    ```bash
+   json="$(mktemp -t gh_activity).json"
    bash scripts/collect.sh \
      --since <YYYY-MM-DD> \
      --until <YYYY-MM-DD> \
      --repos <owner/repo,owner/repo> \
-     > /tmp/gh_activity_<since>_<until>.json
+     > "$json"
    ```
 
    スクリプトはstdoutにJSON、進捗をstderrに出す。非ゼロ終了ならstderrの内容をユーザーへ報告して中断する。

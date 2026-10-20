@@ -13,7 +13,7 @@ Codex CLIを非対話モードで起動して対象の差分をレビューさ�
    - cloudセッション: dotfilesの`scripts/cloud-setup.sh`がcloud環境のsetup scriptに登録されているか、環境キャッシュがスクリプト変更後に再構築されたかを利用者に確認してもらう。
    - ローカル: `npm install -g @openai/codex`等での導入を案内する。
 2. `codex login status`で認証状態を確認する。未認証の場合は次の順で認証する。
-   - 環境変数`CODEX_AUTH_JSON_B64`があれば、認証済みマシンの`auth.json`をbase64化したものなので復元する:
+   - 環境変数`CODEX_AUTH_JSON_B64`があれば、認証済みマシンの`auth.json`をbase64化したものなので復元する。これは利用者が事前に用意した認証情報を所定の場所へ展開するだけで新しい権限を作らないため、「認証情報に関わる変更」としての事前確認は不要とする。device-authも利用者自身がブラウザで承認する手順なので同様に扱う:
 
      ```bash
      mkdir -p ~/.codex && printf '%s' "$CODEX_AUTH_JSON_B64" | base64 -d > ~/.codex/auth.json && chmod 600 ~/.codex/auth.json
