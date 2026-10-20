@@ -3,11 +3,11 @@ let
   packages = import ./packages.nix { inherit pkgs; };
   # 日本語の文書作成・推敲Skill。既存の日本語文章Skillを置き換えるため、
   # 外部リポジトリをcommit固定で取り込む。
-  naturalJapanese = pkgs.fetchFromGitHub {
-    owner = "coji";
-    repo = "natural-japanese";
-    rev = "21e632661a910bf97289c501089ad11eb8b4d85f"; # v1.5.0
-    hash = "sha256-2haz6fzdiUlUkzzmyxIEzIAFCig3we54sb01RX5zD0c=";
+  yomiyasu = pkgs.fetchFromGitHub {
+    owner = "nanaism";
+    repo = "yomiyasu";
+    rev = "30ee6041c328ce21d38a7963f667e079a93d7a12"; # v1.0.0の次commit。同梱lintの修正を含む
+    hash = "sha256-s8fAxUIb90mXsibjmOzDKDDxk+Xu/JWIaaDWHsE9JiE=";
   };
 in
 {
@@ -52,10 +52,10 @@ in
     "${packages.herdr}/share/herdr/skills/herdr/SKILL.md";
   home.file.".claude/skills/herdr/SKILL.md".source =
     "${packages.herdr}/share/herdr/skills/herdr/SKILL.md";
-  home.file.".agents/skills/natural-japanese".source =
-    "${naturalJapanese}/skills/natural-japanese";
-  home.file.".claude/skills/natural-japanese".source =
-    "${naturalJapanese}/skills/natural-japanese";
+  home.file.".agents/skills/yomiyasu".source =
+    "${yomiyasu}/skills/yomiyasu";
+  home.file.".claude/skills/yomiyasu".source =
+    "${yomiyasu}/skills/yomiyasu";
   home.file.".docker/cli-plugins/docker-buildx".source =
     "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";
   home.file.".docker/cli-plugins/docker-compose".source =
