@@ -161,10 +161,10 @@
   },
   "enabledPlugins": {
     "codex@openai-codex": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": false,
     "ponytail@ponytail": true,
-    "reviewable-html-workbench@reviewable-html-workbench-local": true,
-    "show-me@skills": true,
+    "reviewable-html-workbench@reviewable-html-workbench-local": false,
+    "show-me@skills": false,
     "eli5@claude-community": true,
     "mattpocock-skills@claude-plugins-official": true
   },
@@ -215,5 +215,10 @@
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "remoteControlAtStartup": false,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "skillOverrides": {
+    "herdr": "off",
+    "x-fetch-post": "off",
+    "reader-centered-communication": "off"
+  }
 }
