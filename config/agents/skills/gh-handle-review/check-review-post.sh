@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gh-handle-review の数えられる規約(手順3の must 上限・手順3の prefix・手順4の段落数・
-# 手順6の禁止記載)を、レビュー投稿コマンドの実行前に検査する PreToolUse hook。
+# 手順6の禁止記載)を、レビュー投稿コマンドの実行前に検査する PreToolUse hookである。
 # 対象外のコマンドと判定不能な入力は exit 0(過剰ブロックしない)。違反は exit 2 で
 # 停止し、stderr の内容が Claude へ返る。規約の文章は SKILL.md 側が正で、この
 # スクリプトが持つのは数値契約(prefix 6種 / must<=2 / 2段落以内 / 禁止語)のみ。
