@@ -81,7 +81,7 @@
       "Remote Deletion via API [named+specifics — must name: the remote resource being deleted]: `gh api` with `-X DELETE` or `--method DELETE`, and GitHub MCP or REST calls that delete remote comments, reviews, labels, branches or other resources, including ones the agent created this session. Clears only when the user named the target in this session."
     ]
   },
-  "model": "fable",
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -102,6 +102,11 @@
           {
             "type": "prompt",
             "prompt": "Claudeが停止すべきか評価してください。以下のルールに従ってJSONのみで回答してください。(1) 入力に stop_hook_active: true が含まれる場合は必ず {\"ok\": true} を返す（無限ループ防止）。(2) Claudeがユーザーの返答を待っている、または質問をしている場合は {\"ok\": true} を返す。(3) ファイルの編集が途中、コマンドの実行忘れなど明らかに作業が中断している場合のみ {\"ok\": false, \"reason\": \"未完了の内容\"} を返す。 (4) 直前のClaudeの本文が、設定・ファイルの変更や作業の完了を報告しているのに、その根拠（参照した一次資料の該当箇所、または検証コマンドの実際の出力）を伴っていない場合は {\"ok\": false, \"reason\": \"根拠が未提示の報告\"} を返す。 (5) 直前のClaudeの本文が、新たな提案・設計判断・実質的な変更を含むのに、その前提となる既存の実装・設定・履歴・一次資料を何で確認したかを示していない場合は {\"ok\": false, \"reason\": \"調査の形跡がない提案・変更\"} を返す。"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/yomiyasu/yomiyasu_gate.py\" stop",
+            "timeout": 30
           },
           {
             "type": "command",
@@ -130,7 +135,7 @@
           },
           {
             "type": "command",
-            "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"文書またはメッセージを作成・推敲する場合は、実際の読者の役割、前提知識、目的、利用場面を考慮し、読者とTPOに合わせて用語、語尾、情報の順序、説明量を調整する。読者が不明で結果が大きく変わる場合だけ確認し、それ以外は合理的な仮定で進める。コードや設定だけを返す依頼には適用しない。\"}}'"
+            "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"文書またはメッセージを作成・推敲する場合は、実際の読者の役割、前提知識、目的、利用場面を考慮し、読者とTPOに合わせて用語、語尾、情報の順序、説明量を調整する。読者が不明で結果が大きく変わる場合だけ確認し、それ以外は合理的な仮定で進める。会話の返答を含め、日本語の文章を書くときは、出す前にyomiyasu Skillで推敲する。コードや設定だけを返す依頼には適用しない。\"}}'"
           }
         ]
       }
@@ -150,6 +155,16 @@
             "if": "Bash(gh pr create*)",
             "command": "\"$HOME/.claude/skills/gh-create-pr/check-pr-create.sh\"",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit|Artifact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/yomiyasu/yomiyasu_gate.py\" pretooluse",
+            "timeout": 30
           }
         ]
       }

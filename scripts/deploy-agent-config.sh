@@ -38,6 +38,7 @@ link() {
 }
 
 mkdir -p "$claude_home/rules" "$claude_home/skills" "$claude_home/hooks/notification" \
+  "$claude_home/hooks/yomiyasu" \
   "$codex_home/rules" "$agents_home/skills"
 
 # 共通指示
@@ -58,6 +59,8 @@ done
 link "$repo_root/config/claude/statusline-command.sh" "$claude_home/statusline-command.sh"
 link "$repo_root/config/claude/hooks/notification/completed.wav" \
   "$claude_home/hooks/notification/completed.wav"
+link "$repo_root/config/claude/hooks/yomiyasu/yomiyasu_gate.py" \
+  "$claude_home/hooks/yomiyasu/yomiyasu_gate.py"
 
 # Codex の hooks と rules
 link "$repo_root/config/codex/hooks.json" "$codex_home/hooks.json"

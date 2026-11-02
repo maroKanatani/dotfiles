@@ -48,7 +48,7 @@ GitHub Searchの`updated:`は対象全体の更新日時であり、レビュー
 
 1. トップレベルはリポジトリ名（`owner/repo`の`repo`部分のみ）を`-`の箇条書きにする。
 2. `created_issues` / `created_prs` / `assigned` は省略せず全件記載する。
-3. 各アイテムの下の階層に`status`を書く。
+3. 各アイテムのリンクの直後に、同じ行へ`status`を小文字の括弧書き(`(merged)`、`(open)`、`(draft)`、`(close)`)で書く。JSONの`PR`は`(open)`と書く。下の階層には分けない。
 4. 同一リポジトリに5件以上あるときは、タイトルとラベルからトピックを推定してグループ化する。5件未満ならグループ化しない。どのグループにも入らないものは「その他」にまとめる。
 5. 並び順は関連度の高い順にする。
 6. レビューは「コードレビュー」の項目名だけを書き、個別のPRは列挙しない。
@@ -60,17 +60,13 @@ GitHub Searchの`updated:`は対象全体の更新日時であり、レビュー
 ```md
 - repository1
   - 型アサーション対応
-    - [asの削除1](https://github.com/owner/repository1/pull/xxx)
-      - Merged
-    - [asの削除2](https://github.com/owner/repository1/pull/yyy)
-      - PR
+    - [asの削除1](https://github.com/owner/repository1/pull/xxx) (merged)
+    - [asの削除2](https://github.com/owner/repository1/pull/yyy) (open)
   - その他
-    - [ドキュメント更新](https://github.com/owner/repository1/pull/bbb)
-      - Merged
+    - [ドキュメント更新](https://github.com/owner/repository1/pull/bbb) (merged)
   - コードレビュー
 - repository2
-  - [機能A追加](https://github.com/owner/repository2/pull/ccc)
-    - Merged
+  - [機能A追加](https://github.com/owner/repository2/pull/ccc) (merged)
   - コードレビュー
 ```
 
