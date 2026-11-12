@@ -4,3 +4,4 @@ CLAUDE.local.md
 .claude/settings.local.json
 apm_modules/
 __pycache__/
+auth.json
