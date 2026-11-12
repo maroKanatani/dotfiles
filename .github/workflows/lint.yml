@@ -19,7 +19,9 @@ jobs:
       - uses: ./.github/actions/setup-nix
 
       - name: Check agent configuration
-        run: bash scripts/check-agent-config.sh
+        run: |
+          for script in scripts/*.sh; do bash -n "$script"; done
+          python3 -m json.tool config/claude/settings.json > /dev/null
 
       - name: Check flake
         run: nix flake check --all-systems --show-trace

@@ -15,7 +15,7 @@ information in the repository.
 - `config/agents/skills/`: curated shared Agent Skills sources
 - `config/claude/`: Claude Code user settings and managed assets
 - `config/codex/`: Codex settings that can be managed independently of runtime state
-- `scripts/`: apply, deploy, and check scripts; `deploy-agent-config.sh` is the single agent-configuration path
+- `scripts/`: `apply.sh` for this machine, `cloud-setup.sh` for cloud VMs; both call `setup-agents.sh`, the single agent-configuration path
 
 No username or home-directory path is stored in this repository, and the Nix
 expressions do not use an impure environment lookup.
@@ -24,16 +24,17 @@ expressions do not use an impure environment lookup.
 
 Nix declares the tools installed on this machine. Agent configuration is kept
 in this repository as the source of truth and deployed, on every environment,
-by one script that links the checkout into the home directory. State that a
-CLI rewrites itself is either overwritten from a repository copy or left to a
-documented manual procedure.
+by one script that links the checkout into the home directory and installs the
+declared plugins. `~/.claude/settings.json` is a link too, so what the CLI
+writes shows up as a diff in this repository.
 
 | Concern | Managed by | Why |
 |---|---|---|
 | Packages, mise, zsh, gh extensions, Docker plugins | `nix/home.nix` | Only this machine needs them; reproducible versions matter |
-| `AGENTS.md`, Skills, hooks, status line, Codex rules | `scripts/deploy-agent-config.sh` | Needed on the local machine and on cloud VMs, which have no Nix |
-| `~/.claude/settings.json` | same script, copied | Claude writes the file in place, so it cannot be a link |
-| Plugins, Codex `config.toml`, authentication | manual, see below | Generated and updated by the CLIs themselves |
+| `AGENTS.md`, own Skills, status line, Codex rules | `scripts/setup-agents.sh`, linked | Needed on the local machine and on cloud VMs, which have no Nix |
+| `~/.claude/settings.json` | same script, linked | CLI edits become reviewable diffs instead of being overwritten |
+| Plugins | same script, from `settings.json` | One declaration installs the same plugins locally and in the cloud |
+| Codex `config.toml`, authentication | not managed | Generated and updated by the CLIs themselves |
 
 ## Install managed packages
 
@@ -85,122 +86,139 @@ User-level shared instructions live in `config/agents/AGENTS.md`. This
 repository's own instructions live in the root `AGENTS.md`; `CLAUDE.md` imports
 it for Claude Code.
 
-`scripts/deploy-agent-config.sh` links the checkout into the home directory:
+`scripts/setup-agents.sh` links the checkout into the home directory and then
+installs the declared plugins. It needs only `git` and `python3`, and running
+it again changes nothing.
 
 | Source | Target |
 |---|---|
 | `config/agents/AGENTS.md` | `~/.claude/rules/common.md`, `~/.codex/AGENTS.md` |
 | `config/claude/rules/pstack-models.md` | `~/.claude/rules/pstack-models.md` |
 | `config/agents/skills/<name>/` | `~/.claude/skills/<name>`, `~/.agents/skills/<name>` |
+| `config/claude/settings.json` | `~/.claude/settings.json` |
 | `config/claude/statusline-command.sh` | `~/.claude/statusline-command.sh` |
 | `config/claude/hooks/notification/completed.wav` | `~/.claude/hooks/notification/completed.wav` |
-| `config/codex/hooks.json`, `config/codex/rules/*.rules` | `~/.codex/hooks.json`, `~/.codex/rules/` |
-| `config/claude/settings.json` | `~/.claude/settings.json` (copied, not linked) |
+| `config/codex/rules/*.rules` | `~/.codex/rules/` |
 
-Skills are linked one by one so unmanaged, product-specific skills can coexist
-in the same directories. An existing regular file or non-empty directory at a
-target is kept and reported instead of replaced. Because the links point at the
-checkout, an edit in this repository takes effect in the next session without
-re-running the script; only a new skill directory or a changed `settings.json`
-needs another run.
+An existing regular file or non-empty directory at a target is kept and
+reported instead of replaced. A link that points into this checkout at a file
+that no longer exists is removed, so deleting a Skill here also removes it from
+the home directory on the next run.
 
-Locally `scripts/apply.sh` runs the Home Manager apply, deletes leftover
-skills, and then runs the deploy script. The same deploy script is what
-`scripts/cloud-setup.sh` runs on a cloud VM, so both environments receive the
-same files from the same source.
+Locally `scripts/apply.sh` runs the Home Manager apply and then this script.
+On a cloud VM `scripts/cloud-setup.sh` runs the same script, so both
+environments get the same files and the same plugins from one source.
 
 ```sh
 scripts/apply.sh --dry-run
 scripts/apply.sh
 ```
 
-Reusable workflows follow the Agent Skills layout under
-`config/agents/skills/`. Keeping the source outside a discovery directory
-avoids loading the same skill once from this repository and again from the
-user-level path. An optional `agents/openai.yaml` customizes OpenAI's skill UI
-and default prompt; the workflow itself remains in `SKILL.md`.
+`--dry-run` covers Home Manager only; `setup-agents.sh` has no read-only mode
+and is skipped.
 
-Skills maintained in another repository are vendored with `gh skill`, which
-copies the upstream skill into `config/agents/skills/` and records the source
-repository, ref, and tree SHA in its front matter:
+### Settings
 
-```bash
-gh skill install github/gh-stack gh-stack --pin main --dir config/agents/skills --force
-gh skill install nanaism/yomiyasu skills/yomiyasu --pin <commit> --dir config/agents/skills --force
-```
+`~/.claude/settings.json` is a one-level absolute symlink to
+`config/claude/settings.json`. Whatever Claude Code writes, such as `/model`,
+`/effort`, or `claude plugin install`, lands in this repository: review it with
+`git diff` and commit it or discard it. Nothing is overwritten on apply, so
+there is no copy to carry back.
 
-The deploy script links the vendored copy like any curated skill, so it reaches
-cloud sessions as well. Rerun the same command to refresh it. `gh skill` does
-not verify skill contents, so read the files before committing them. The CI
-security scan (tirith) flags an ASCII word directly followed by an ideographic
-full stop as a confusable, so after every refresh of yomiyasu insert である
-between "Agent Skill" and the full stop that ends the first sentence of its
-description. Do not
-fetch a skill through `nix/home.nix` instead: a Nix-only source never reaches a
-cloud session.
+On Claude Code 2.1.322 the link survived `claude plugin disable`,
+`claude plugin enable`, and `/effort`. Reports of the link being replaced by a
+regular file concern chains of two or more links and links through read-only
+locations (https://github.com/anthropics/claude-code/issues/78162), so keep it
+at one level. If `ls -l ~/.claude/settings.json` ever shows a regular file,
+run `scripts/setup-agents.sh` again: it moves the file to
+`settings.json.pre-link.bak` once and restores the link.
 
-Herdr ships a skill inside its own package, but it is not deployed: the binary
-is absent from cloud VMs and the skill is disabled locally through
-`skillOverrides`. If it is wanted again, vendor it with `gh skill install`.
+The CLI reorders the top-level keys when it saves. The tracked file is kept in
+that order so later saves do not produce reordering noise.
 
-Domain-specific business knowledge is managed outside this repository and is
-not included in the shared set. Add a new skill only when a repeated task needs
-specialized knowledge, a deterministic script, or a stable output contract.
-
-`config/claude/settings.json` is the source of truth for the Claude Code user
-settings. `scripts/sync-claude-settings.py` overwrites the writable user file
-with it, after backing the previous file up. Anything the CLI wrote in place is
-lost on the next run: after `claude plugin install` or a `/config` change,
-carry the new value back into `config/claude/settings.json` before applying
-again. Do not duplicate these personal settings in a repository's
-`.claude/settings.json`; that path is project-scoped.
-
-Deploying the file is what makes permission rules work at all: a rule only
-takes effect when a settings file the session reads declares it. Permission
-decisions are delegated to auto mode; `autoMode.soft_deny` keeps merges,
-Ready-for-review, close, and remote deletions behind an explicit user
+Permission decisions are delegated to auto mode; `autoMode.soft_deny` keeps
+merges, Ready-for-review, close, and remote deletions behind an explicit user
 instruction, while commits, pushes, Draft PRs, and file edits run unattended.
 
-`scripts/apply.sh` also deletes leftover skills, because every one of them is
-loaded by every session from then on. In `~/.claude/skills` every entry is
-either a symlink to an existing path outside the Nix store or a leftover: a
-broken link, a link into any store path, or a file an agent wrote there
-directly. All leftovers are deleted. `~/.agents/skills` also holds Codex skills
-that predate this repository, so only links are deleted there.
-`scripts/test-apply-prune.sh` pins that classification.
+### Plugins and Skills
 
-Codex's `config.toml` is intentionally not managed because Codex currently
-stores both durable preferences and machine-local state in that file.
+pstack, Matt Pocock's skills, and yomiyasu are the centre of the workflow, and
+all three are installed as plugins rather than copied. The declaration is the
+`enabledPlugins` and `extraKnownMarketplaces` keys of
+`config/claude/settings.json`:
+
+| Plugin | Marketplace |
+|---|---|
+| `pstack@cursor-plugins` | `cursor/plugins` |
+| `mattpocock-skills@claude-plugins-official` | `anthropics/claude-plugins-official` |
+| `yomiyasu@yomiyasu` | `nanaism/yomiyasu` |
+| `codex@openai-codex` | `openai/codex-plugin-cc` |
+
+`setup-agents.sh` reads that declaration and runs `claude plugin install` and
+`codex plugin add` for every enabled entry. A declaration alone is not enough
+in a cloud session, which does not install declared plugins by itself.
+`codex@openai-codex` calls Codex from Claude Code, so it is not added to Codex.
+
+To add a plugin, run `claude plugin marketplace add` and
+`claude plugin install` once and commit the resulting diff. To remove one, run
+`claude plugin uninstall` and commit; the script never uninstalls.
+
+pstack does not list Codex as a target. Codex reads its `.claude-plugin`
+manifest, so the skills load, but treat that as best effort.
+
+The only Skill kept in this repository is `gh-activity`, which has no plugin
+equivalent. Add another one only when a repeated task needs specialized
+knowledge, a deterministic script, or a stable output contract, and no adopted
+plugin covers it.
+
+pstack reads its per-role model choices from `~/.claude/rules/pstack-models.md`.
+The tracked copy under `config/claude/rules/` is the source of truth and is
+linked by the setup script, so cloud sessions get the same mapping. To change
+it, run `/pstack:setup-pstack`, then copy the written file back into the
+repository.
+
+`setup-matt-pocock-skills` writes `docs/agents/*.md` and an `## Agent skills`
+section into whichever repository it runs in, so run it only where that
+per-repository configuration is wanted. Turn an individual skill off through
+the plugin instead of copying an edited file into `config/agents/skills/`.
+
+### Hooks
+
+Two hooks remain. The completion sound plays on Stop and is a no-op where
+`afplay` is missing. The yomiyasu hook is the plugin's own
+`scripts/yomiyasu_hook.py`; the command in `settings.json` resolves the newest
+installed version at run time and exits 0 when the plugin is absent, so a
+missing file can never block a tool call.
+
+The yomiyasu hook only acts on a draft that was registered with
+`yomiyasu_check.py start`. It does not lint every reply. Japanese text is
+polished by invoking the `yomiyasu:yomiyasu` Skill, as the shared instructions
+require. No hook is registered for Codex.
+
+### Codex
+
+Codex's `config.toml` is intentionally not managed because Codex stores both
+durable preferences and machine-local state in that file. Do not copy its
+generated marketplace, plugin, or hook-trust state into this repository.
 
 Authentication, histories, caches, sessions, memories, project trust entries,
-marketplace refresh timestamps, and generated hook trust hashes are not part of
-this repository.
+and marketplace refresh timestamps are not part of this repository.
 
-Before applying the configuration, run the checks and a Home Manager dry run:
+### Checks
+
+Before applying a change to the agent configuration:
 
 ```sh
-scripts/check-agent-config.sh
-scripts/test-apply-prune.sh
+for script in scripts/*.sh; do bash -n "$script"; done
+python3 -m json.tool config/claude/settings.json > /dev/null
 scripts/apply.sh --dry-run
 ```
-
-Claude and Codex hooks retain optional integrations with Superset and Herdr.
-The `herdr` binary itself is part of the Nix package catalog, but the hook
-scripts those integrations install are generated by their own CLIs and are not
-managed here; hook commands check for their environment and scripts and become
-no-ops when they are unavailable.
 
 ### Claude Code cloud sessions
 
 Cloud sessions, which include Claude Code on the web, `claude --cloud`, and
-routines, run on a fresh VM. They read the cloned repository, that VM's own home
-directory, and the cloud environment configuration; the Home Manager links on a
-local machine never reach them.
-
-`scripts/cloud-setup.sh` runs the same `scripts/deploy-agent-config.sh` inside
-the session VM and then installs the Codex CLI. Register the bootstrap in the
-**Setup script** field of the cloud environment at
-[claude.ai/code](https://claude.ai/code):
+routines, run on a fresh VM. Register the bootstrap in the **Setup script**
+field of the cloud environment at [claude.ai/code](https://claude.ai/code):
 
 ```sh
 git clone --depth 1 https://github.com/maroKanatani/dotfiles.git /opt/dotfiles
@@ -208,82 +226,39 @@ bash /opt/dotfiles/scripts/cloud-setup.sh
 exit 0
 ```
 
-One environment-level registration covers every repository, so no personal
-configuration is committed to a project's `.claude/` directory. Start a new
-cloud session afterwards and confirm that the shared skills are listed and the
-shared instructions are loaded.
+`scripts/cloud-setup.sh` installs the Codex CLI and then runs
+`scripts/setup-agents.sh`. One environment-level registration covers every
+repository, so no personal configuration is committed to a project's `.claude/`
+directory.
+
+What was confirmed on real cloud runs:
+
+- The session reads the VM's own `~/.claude/settings.json`, hooks, rules, and
+  Skills written by the setup script. Only the files on your local machine are
+  not carried over.
+- `claude` is on the PATH while the setup script runs, and a plugin installed
+  there with `claude plugin install` is loaded by the session. Plugin skills
+  therefore have the same names as on the local machine, for example
+  `/pstack:poteto-mode`.
+- Installing a plugin from inside a running cloud session is refused by the
+  auto mode classifier, so the setup script is the only place to do it.
 
 The setup script runs when an environment has no cached snapshot, and the
 resulting filesystem is reused for roughly seven days. A change in this
 repository therefore reaches new sessions after the cache is rebuilt; editing
 the environment's setup script field rebuilds it immediately.
 
-`config/claude/settings.json` is deployed to a cloud session too, so the same
-permission and auto-mode rules apply there. The status line, the notification
-sound, and the Herdr hook depend on local tools and fail silently on the VM.
-User-scoped `enabledPlugins` is not applied there, and a cloud session does not
-install plugins even when a repository declares them, so pstack is linked into
-`~/.claude/skills` and `~/.claude/agents` by `scripts/cloud-setup.sh` from a
-clone of `cursor/plugins` instead. Its skills have no `pstack:` prefix there:
-type `/poteto-mode`, not `/pstack:poteto-mode`. The other plugins are local only.
-
-### Adopted AI plugins
-
-pstack, Reviewable HTML Workbench, show-me, ELI5, and Matt Pocock's skills
-are installed from their upstream marketplaces. Ponytail was replaced by
-pstack, whose `principle-laziness-protocol` covers the same ground, and is
-kept disabled in `enabledPlugins`. Use the host CLIs instead of
-copying their Skills or hooks into this repository:
+The Codex CLI in a cloud session is not authenticated by the setup script. Put
+the output of `scripts/refresh-codex-web-token.sh` into the environment
+variable `CODEX_AUTH_JSON_B64` and restore it inside the session:
 
 ```sh
-codex plugin marketplace add cursor/plugins
-codex plugin add pstack@cursor-plugins
-codex plugin marketplace add u-ichi/reviewable-html-workbench
-codex plugin add reviewable-html-workbench@reviewable-html-workbench-local
-codex plugin marketplace add humanlayer/skills
-codex plugin add show-me@skills
-codex plugin marketplace add anthropics/claude-plugins-community
-codex plugin add eli5@claude-community
-codex plugin marketplace add anthropics/claude-plugins-official
-codex plugin add mattpocock-skills@claude-plugins-official
-
-claude plugin marketplace add cursor/plugins
-claude plugin install pstack@cursor-plugins
-claude plugin marketplace add u-ichi/reviewable-html-workbench
-claude plugin install reviewable-html-workbench
-claude plugin marketplace add humanlayer/skills
-claude plugin install show-me@skills
-claude plugin marketplace add anthropics/claude-plugins-community
-claude plugin install eli5@claude-community
-claude plugin marketplace add anthropics/claude-plugins-official
-claude plugin install mattpocock-skills@claude-plugins-official
+mkdir -p ~/.codex && printf '%s' "$CODEX_AUTH_JSON_B64" | base64 -d > ~/.codex/auth.json && chmod 600 ~/.codex/auth.json
 ```
 
-Start a new Claude Code session after either plugin changes. Reviewable HTML
-Workbench requires Python 3.11 or later.
-
-pstack reads its per-role model choices from `~/.claude/rules/pstack-models.md`.
-The tracked copy under `config/claude/rules/` is the source of truth and is
-linked by the deploy script, so cloud sessions get the same mapping. To change
-it, run `/pstack:setup-pstack`, then copy the written file back into the
-repository. In Claude Code the skills are namespaced, so `/poteto-mode` is
-`/pstack:poteto-mode`.
-
-Twenty-five skills arrive with `mattpocock-skills`, eleven of them
-model-invoked, so those fire on their own whenever a task matches. Two overlaps
-are worth knowing before they surprise you: `writing-for-agents` triggers on
-edits to a skill or an `AGENTS.md`, which covers most work in this repository,
-and its `code-review` skill covers the same ground as the disabled
-`code-review@claude-plugins-official` plugin. Turn an individual skill off
-through the plugin instead of copying an edited file into
-`config/agents/skills/`. `setup-matt-pocock-skills` writes `docs/agents/*.md`
-and an `## Agent skills` section into whichever repository it runs in, so run
-it only where that per-repository configuration is wanted.
-
-Do not copy Codex's generated marketplace, plugin, or hook-trust state from
-`~/.codex/config.toml` into this repository. Claude's reproducible marketplace
-and enabled-plugin keys remain recorded in `config/claude/settings.json`; the
-CLI-owned user file stays writable.
+Whether Codex Cloud reads `~/.codex` or plugins written by a setup script has
+not been verified. The path its documentation guarantees is the repository's
+own `AGENTS.md`.
 
 ### local-mcp evaluation
 
