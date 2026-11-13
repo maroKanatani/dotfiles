@@ -1,18 +1,18 @@
 { pkgs }:
 let
-  ghPrGraphVersion = "0.14.5";
+  ghPrGraphVersion = "0.15.2";
   ghPrGraphAssets = {
     aarch64-darwin = {
       name = "darwin-arm64";
-      hash = "sha256-rvaXDwVLx3eo1FQ4pz42eVYjr0A4Iy2bEIc1xZn0Mis=";
+      hash = "sha256-YFjw/Yd4GTVgZg/jbuW6KPbrGojquQ/aodMWt7tea1E=";
     };
     aarch64-linux = {
       name = "linux-arm64";
-      hash = "sha256-KesZnPG5r6GgYQAh/qEQSTk/xu5jeHoSqVhm/0nEpcs=";
+      hash = "sha256-EYqkza8exdD+M3Zb6yQyRVjxeIIMDEqa2/xdqykNYLM=";
     };
     x86_64-linux = {
       name = "linux-amd64";
-      hash = "sha256-Ppe1ByxaFoJNDfYg2x2rOUQs9PqXAWjRE2mMDvKS1nI=";
+      hash = "sha256-JNQV/yzhgNLPdlBkyye2wuJ0GKA6i7ahxLVyM8RHPgQ=";
     };
   };
   ghPrGraphAsset = ghPrGraphAssets.${pkgs.stdenv.hostPlatform.system};
