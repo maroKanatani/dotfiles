@@ -62,6 +62,18 @@ in
   tmux = pkgs.tmux;
   tree = pkgs.tree;
   yq = pkgs.yq;
-  zat = pkgs.zat;
+  # zat 0.5.3 が同梱する tree-sitter-haskell 0.23.1 の array.h には strict aliasing 違反があり、
+  # gcc 16 で最適化すると Haskell の解析中にヒープを壊す (checkPhase が SIGABRT で落ちる)。
+  # 上流の修正 bglgwyng/zat#3 が取り込まれるまで、Linux では最適化の前提を外してビルドする。
+  # macOS は clang でビルドされ、この問題は起きないので、キャッシュ済みの pkgs.zat を使う。
+  zat =
+    if pkgs.stdenv.hostPlatform.isLinux then
+      pkgs.zat.overrideAttrs (old: {
+        env = (old.env or { }) // {
+          NIX_CFLAGS_COMPILE = "-fno-strict-aliasing";
+        };
+      })
+    else
+      pkgs.zat;
   zoxide = pkgs.zoxide;
 }
