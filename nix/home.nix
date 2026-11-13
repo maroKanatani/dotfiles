@@ -17,7 +17,7 @@ in
   home.file.".config/mise/config.toml".source = ../mise/config.toml;
   # エージェント設定(AGENTS.md、Skill、settings.json、hooks)はここでは配布しない。
   # ローカルとクラウドの両方へ同じ経路で届ける必要があり、Nix の無いクラウド VM
-  # にも届く唯一の経路が scripts/deploy-agent-config.sh による checkout への
+  # にも届く唯一の経路が scripts/setup-agents.sh による checkout への
   # リンクだから。Nix が担うのはこのマシンに入れるツールだけ。
   home.file.".docker/cli-plugins/docker-buildx".source =
     "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";

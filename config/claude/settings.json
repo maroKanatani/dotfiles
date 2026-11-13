@@ -59,15 +59,133 @@
     ],
     "defaultMode": "auto"
   },
-  "autoMode": {
-    "environment": [
-      "$defaults",
-      "Source control: github.com/classmethod-aws and all repos under it",
-      "Key internal services: OpenAI Codex CLI (`codex exec`) is an approved code-review tool. Sending the working repository's own diff to the OpenAI API through `codex exec` is an intended, reviewed step of the PR review routine, not exfiltration.",
-      "Data retention / declassification: Codex CLI runs under the operator's own ChatGPT/Codex plan.",
-      "Git workflow: rebase-based. Feature branches are synced with `git fetch` + `git rebase` / `git pull --rebase` and then force-pushed with `git push --force-with-lease` to their own remote branch; merge commits and merge-style pulls are not used. The default branch and deploy/release branches are never force-pushed.",
-      "GitHub workflow: pull requests are created as Draft, then labels and assignees are set and the PR is read back to verify base/head/draft state. The same work is done across several repositories under github.com/classmethod-aws in one session, through either the `gh` CLI or the GitHub MCP server (create_pull_request, update_pull_request, issue_write, review comments). Marking Ready for review, closing, merging and approving reviews are not part of the routine and follow the user's explicit instruction."
+  "model": "fable",
+  "hooks": {
+    "UserPromptExpansion": [
+      {
+        "matcher": "^(yomiyasu|yomiyasu:yomiyasu)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(ls -d \"$HOME\"/.claude/plugins/cache/yomiyasu/yomiyasu/*/scripts/yomiyasu_hook.py 2>/dev/null | sort -V | tail -1); [ -n \"$f\" ] || exit 0; exec python3 -B \"$f\" --host claude-code",
+            "timeout": 5
+          }
+        ]
+      }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(ls -d \"$HOME\"/.claude/plugins/cache/yomiyasu/yomiyasu/*/scripts/yomiyasu_hook.py 2>/dev/null | sort -V | tail -1); [ -n \"$f\" ] || exit 0; exec python3 -B \"$f\" --host claude-code",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(ls -d \"$HOME\"/.claude/plugins/cache/yomiyasu/yomiyasu/*/scripts/yomiyasu_hook.py 2>/dev/null | sort -V | tail -1); [ -n \"$f\" ] || exit 0; exec python3 -B \"$f\" --host claude-code",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(ls -d \"$HOME\"/.claude/plugins/cache/yomiyasu/yomiyasu/*/scripts/yomiyasu_hook.py 2>/dev/null | sort -V | tail -1); [ -n \"$f\" ] || exit 0; exec python3 -B \"$f\" --host claude-code",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v afplay >/dev/null 2>&1 && [ -f \"$HOME/.claude/hooks/notification/completed.wav\" ] && afplay \"$HOME/.claude/hooks/notification/completed.wav\" || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(ls -d \"$HOME\"/.claude/plugins/cache/yomiyasu/yomiyasu/*/scripts/yomiyasu_hook.py 2>/dev/null | sort -V | tail -1); [ -n \"$f\" ] || exit 0; exec python3 -B \"$f\" --host claude-code",
+            "timeout": 1
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"$HOME/.claude/statusline-command.sh\""
+  },
+  "enabledPlugins": {
+    "pstack@cursor-plugins": true,
+    "mattpocock-skills@claude-plugins-official": true,
+    "yomiyasu@yomiyasu": true,
+    "codex@openai-codex": true
+  },
+  "extraKnownMarketplaces": {
+    "cursor-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "cursor/plugins"
+      }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "yomiyasu": {
+      "source": {
+        "source": "github",
+        "repo": "nanaism/yomiyasu"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
+  "outputStyle": "Concise",
+  "language": "japanese",
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium"
+    },
+    "claude-fable-5-2": {
+      "effortLevel": "medium"
+    }
+  },
+  "tui": "fullscreen",
+  "autoMemoryEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark",
+  "remoteControlAtStartup": false,
+  "skipAutoPermissionPrompt": true,
+  "autoMode": {
     "allow": [
       "$defaults",
       "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff.",
@@ -79,176 +197,14 @@
       "PR Merge [named+specifics — must name: the PR being merged]: Merging any pull request by any means (`gh pr merge`, the GitHub MCP tool merge_pull_request, or the REST API), regardless of review or check state. The user's workflow never merges from the agent. Clears only when the user asked in this session to merge that specific PR.",
       "PR/Issue State Change [named+specifics — must name: the item and the state change]: Marking a pull request Ready for review (`gh pr ready`, `draft: false`), or closing or reopening a pull request or issue (`gh pr close`, `gh issue close`, `state: closed`/`open`), including items the agent created this session. Clears only when the user asked for that change to that item.",
       "Remote Deletion via API [named+specifics — must name: the remote resource being deleted]: `gh api` with `-X DELETE` or `--method DELETE`, and GitHub MCP or REST calls that delete remote comments, reviews, labels, branches or other resources, including ones the agent created this session. Clears only when the user named the target in this session."
+    ],
+    "environment": [
+      "$defaults",
+      "Source control: github.com/classmethod-aws and all repos under it",
+      "Key internal services: OpenAI Codex CLI (`codex exec`) is an approved code-review tool. Sending the working repository's own diff to the OpenAI API through `codex exec` is an intended, reviewed step of the PR review routine, not exfiltration.",
+      "Data retention / declassification: Codex CLI runs under the operator's own ChatGPT/Codex plan.",
+      "Git workflow: rebase-based. Feature branches are synced with `git fetch` + `git rebase` / `git pull --rebase` and then force-pushed with `git push --force-with-lease` to their own remote branch; merge commits and merge-style pulls are not used. The default branch and deploy/release branches are never force-pushed.",
+      "GitHub workflow: pull requests are created as Draft, then labels and assignees are set and the PR is read back to verify base/head/draft state. The same work is done across several repositories under github.com/classmethod-aws in one session, through either the `gh` CLI or the GitHub MCP server (create_pull_request, update_pull_request, issue_write, review comments). Marking Ready for review, closing, merging and approving reviews are not part of the routine and follow the user's explicit instruction."
     ]
-  },
-  "model": "opus",
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x \"$HOME/.claude/hooks/herdr-agent-state.sh\" ] && bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session || true",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Claudeが停止すべきか評価してください。以下のルールに従ってJSONのみで回答してください。(1) 入力に stop_hook_active: true が含まれる場合は必ず {\"ok\": true} を返す（無限ループ防止）。(2) Claudeがユーザーの返答を待っている、または質問をしている場合は {\"ok\": true} を返す。(3) ファイルの編集が途中、コマンドの実行忘れなど明らかに作業が中断している場合のみ {\"ok\": false, \"reason\": \"未完了の内容\"} を返す。 (4) 直前のClaudeの本文が、設定・ファイルの変更や作業の完了を報告しているのに、その根拠（参照した一次資料の該当箇所、または検証コマンドの実際の出力）を伴っていない場合は {\"ok\": false, \"reason\": \"根拠が未提示の報告\"} を返す。 (5) 直前のClaudeの本文が、新たな提案・設計判断・実質的な変更を含むのに、その前提となる既存の実装・設定・履歴・一次資料を何で確認したかを示していない場合は {\"ok\": false, \"reason\": \"調査の形跡がない提案・変更\"} を返す。"
-          },
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/yomiyasu/yomiyasu_gate.py\" stop",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "command -v afplay >/dev/null 2>&1 && [ -f \"$HOME/.claude/hooks/notification/completed.wav\" ] && afplay \"$HOME/.claude/hooks/notification/completed.wav\" || true"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "Plan",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "printf '\\n✅ Planning complete! To create a worktree for this feature, run:\\n   /git-create-worktree <feature-name>\\n'"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "printf '%s' 'ツール実行より先に、この発話への返答（受け止めと、これからやること）を本文で書くこと。'"
-          },
-          {
-            "type": "command",
-            "command": "printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"文書またはメッセージを作成・推敲する場合は、実際の読者の役割、前提知識、目的、利用場面を考慮し、読者とTPOに合わせて用語、語尾、情報の順序、説明量を調整する。読者が不明で結果が大きく変わる場合だけ確認し、それ以外は合理的な仮定で進める。会話の返答を含め、日本語の文章を書くときは、出す前にyomiyasu Skillで推敲する。コードや設定だけを返す依頼には適用しない。\"}}'"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "if": "Bash(gh api *)",
-            "command": "\"$HOME/.claude/skills/gh-handle-review/check-review-post.sh\"",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "if": "Bash(gh pr create*)",
-            "command": "\"$HOME/.claude/skills/gh-create-pr/check-pr-create.sh\"",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Bash|Write|Edit|Artifact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/yomiyasu/yomiyasu_gate.py\" pretooluse",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"$HOME/.claude/statusline-command.sh\""
-  },
-  "enabledPlugins": {
-    "codex@openai-codex": true,
-    "rust-analyzer-lsp@claude-plugins-official": false,
-    "ponytail@ponytail": false,
-    "reviewable-html-workbench@reviewable-html-workbench-local": false,
-    "show-me@skills": false,
-    "eli5@claude-community": true,
-    "mattpocock-skills@claude-plugins-official": true,
-    "pstack@cursor-plugins": true
-  },
-  "extraKnownMarketplaces": {
-    "claude-plugins-official": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-plugins-official"
-      }
-    },
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
-    "ponytail": {
-      "source": {
-        "source": "github",
-        "repo": "DietrichGebert/ponytail"
-      }
-    },
-    "reviewable-html-workbench-local": {
-      "source": {
-        "source": "github",
-        "repo": "u-ichi/reviewable-html-workbench"
-      }
-    },
-    "skills": {
-      "source": {
-        "source": "github",
-        "repo": "humanlayer/skills"
-      }
-    },
-    "claude-community": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-plugins-community"
-      }
-    },
-    "cursor-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "cursor/plugins"
-      }
-    }
-  },
-  "outputStyle": "Concise",
-  "language": "japanese",
-  "effortLevel": "medium",
-  "tui": "fullscreen",
-  "autoMemoryEnabled": false,
-  "skipDangerousModePermissionPrompt": true,
-  "skipWorkflowUsageWarning": true,
-  "theme": "dark",
-  "remoteControlAtStartup": false,
-  "skipAutoPermissionPrompt": true,
-  "skillOverrides": {
-    "herdr": "off",
-    "x-fetch-post": "off",
-    "reader-centered-communication": "off"
-  },
-  "modelSettings": {
-    "claude-opus-5-5": {
-      "effortLevel": "high"
-    },
-    "claude-fable-5-1": {
-      "effortLevel": "medium"
-    }
   }
 }
