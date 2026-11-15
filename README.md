@@ -226,8 +226,8 @@ bash /opt/dotfiles/scripts/cloud-setup.sh
 exit 0
 ```
 
-`scripts/cloud-setup.sh` installs the Codex CLI and then runs
-`scripts/setup-agents.sh`. One environment-level registration covers every
+`scripts/cloud-setup.sh` installs the Codex CLI, builds the Nix-managed CLI
+tools, and then runs `scripts/setup-agents.sh`. One environment-level registration covers every
 repository, so no personal configuration is committed to a project's `.claude/`
 directory.
 
@@ -242,6 +242,16 @@ What was confirmed on real cloud runs:
   `/pstack:poteto-mode`.
 - Installing a plugin from inside a running cloud session is refused by the
   auto mode classifier, so the setup script is the only place to do it.
+
+The cloud VM ships with Nix (2.34.6 as of 2026-11-15) but without the tools
+this repository manages, and its own `gh`, `jq`, and `rg` are older. The setup
+script therefore builds the flake output `.#cloud` from the same `flake.lock`
+as the local machine and links the result into `/usr/local/bin`, which precedes
+`/usr/bin` on the session's `PATH`. `.#cloud` is `.#default` without the
+virtualization and Docker tools (`colima`, `lima`, `qemu`, `docker*`), which
+are of no use inside the VM. On a real cloud VM the build took about four
+minutes and 960 MiB, most of it compiling `zat`, which has no binary cache
+entry. Runtimes pinned in `mise/config.toml` are not installed in the cloud.
 
 The setup script runs when an environment has no cached snapshot, and the
 resulting filesystem is reused for roughly seven days. A change in this

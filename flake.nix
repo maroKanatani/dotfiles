@@ -34,6 +34,21 @@
             name = "dotfiles-packages";
             paths = builtins.attrValues packageSet;
           };
+          # cloud session の VM 向け。VM の中では使えない仮想化と Docker の道具を除く。
+          cloud = pkgs.buildEnv {
+            name = "dotfiles-packages-cloud";
+            paths = builtins.attrValues (
+              removeAttrs packageSet [
+                "colima"
+                "docker"
+                "docker-buildx"
+                "docker-compose"
+                "docker-credential-helpers"
+                "lima"
+                "qemu"
+              ]
+            );
+          };
         };
 
       appsFor =
