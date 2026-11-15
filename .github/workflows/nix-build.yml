@@ -57,7 +57,7 @@ jobs:
         with:
           # 現行の tirith リリースは分離した .sig/.pem を使う。cosign 3 の
           # 既定である bundle 形式とは非互換。
-          cosign-release: v2.6.1
+          cosign-release: v2.6.5
           # tirith 0.4.0 の install.sh は PATH を見ず、/usr/bin/cosign、
           # /usr/local/bin/cosign、/opt/homebrew/bin/cosign の実ファイルだけを
           # 探す (symlink も不可)。既定の $HOME/.cosign では検出されない。
