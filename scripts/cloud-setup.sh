@@ -20,6 +20,20 @@ if ! command -v codex >/dev/null 2>&1; then
     printf 'cloud-setup: Codex CLI のインストールに失敗しました\n' >&2
 fi
 
+# ローカルと同じ flake.lock から、Nix 管理の CLI を入れる。cloud の VM には Nix が
+# 最初から入っているが PATH には無いので、絶対パスで呼ぶ。ビルド結果は /usr/local/bin へ
+# リンクし、VM に元からある古い版より先に見つかるようにする。
+nix=/nix/var/nix/profiles/default/bin/nix
+if [[ -x "$nix" ]]; then
+  if "$nix" build "$repo_root#cloud" --out-link /opt/dotfiles-packages; then
+    ln -sfn /opt/dotfiles-packages/bin/* /usr/local/bin/
+  else
+    printf 'cloud-setup: Nix 管理のツールのビルドに失敗しました\n' >&2
+  fi
+else
+  printf 'cloud-setup: nix が見つからないため、Nix 管理のツールを入れません\n' >&2
+fi
+
 bash "$repo_root/scripts/setup-agents.sh"
 
 exit 0
