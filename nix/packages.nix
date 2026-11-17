@@ -54,7 +54,23 @@ in
   jq = pkgs.jq;
   lazygit = pkgs.lazygit;
   lima = pkgs.lima;
-  mise = pkgs.mise;
+  # nixpkgs の mise は 2026.10.17 で、mise.toml の min_version に 2026.10.21 を求める
+  # リポジトリでは mise と shim 経由のコマンドが動かない。nixpkgs が 2026.10.21 以上に
+  # なったら、この上書きを pkgs.mise に戻す。
+  # checkPhase は nixpkgs の 2026.10.17 向けの skip 一覧に依存するので実行しない。
+  mise = pkgs.mise.overrideAttrs (
+    finalAttrs: _old: {
+      version = "2026.10.21";
+      src = pkgs.fetchFromGitHub {
+        owner = "jdx";
+        repo = "mise";
+        tag = "v${finalAttrs.version}";
+        hash = "sha256-zYiZ1rq3CO7GpkfZ/Cy6zjV4Ed7/SqfG0LnnzS8F9K4=";
+      };
+      cargoHash = "sha256-A3Oym26AVRZFZ3hTioMizsx4GTunf1xVrJ/ixLHcsx4=";
+      doCheck = false;
+    }
+  );
   neovim = pkgs.neovim;
   qemu = pkgs.qemu;
   ripgrep = pkgs.ripgrep;
