@@ -273,31 +273,37 @@ own `AGENTS.md`.
 #### GitHub operations the proxy cannot do
 
 The cloud GitHub proxy rejects GraphQL with a 403 whatever token is supplied
-(https://code.claude.com/docs/en/cloud-environments, checked 2026-11-17), so
-`gh pr edit`, `gh project`, and `gh api graphql` fail, and the GitHub MCP
-server cannot attach images. `config/claude/rules/cloud-github.md`, linked
-into `~/.claude/rules/` by `cloud-setup.sh` only, tells the session to try the
-GitHub MCP server, then REST through `gh` (including the Projects v2 REST
-endpoints, https://docs.github.com/en/rest/projects/items), then the
-github.com UI through Claude in Chrome, and forbids pushing images to a side
-branch.
+(https://code.claude.com/docs/en/cloud-environments), and it also rejects every
+REST path outside `repos/{owner}/{repo}/`, which includes the Projects v2
+endpoints under `orgs/` and `users/`. The GitHub MCP server cannot attach
+images. `config/claude/rules/cloud-github.md`, linked into `~/.claude/rules/`
+by `cloud-setup.sh` only, tells the session to try the GitHub MCP server, then
+REST through `gh`, then the github.com UI through Claude in Chrome, and forbids
+pushing images to a side branch.
 
-Claude in Chrome is turned on by `CLAUDE_CODE_ENABLE_CFC=1` in the `env` key of
-`config/claude/settings.json`. On Claude Code 2.1.326 a `claude -p` run loaded
-the `mcp__claude-in-chrome__*` tools with that key set through `--settings`
-and did not without it. The browser being driven is the Chrome on your own
-machine: it must be running with the Claude extension signed in to the same
-claude.ai account and organization, and logged in to GitHub. When no browser
-is connected the rule makes the session report the remaining steps instead of
-improvising.
+The main process of a cloud session does not load the Claude in Chrome tools,
+and `CLAUDE_CODE_ENABLE_CFC=1` in the `env` key of `settings.json` does not
+change that, although other keys of the same `env` block are applied. A nested
+`claude --chrome -p` started from Bash does load them and reaches the browser
+through the bridge, so the rule has the session delegate the UI work to a
+nested run. The browser being driven is the Chrome on your own machine: it must
+be running with the Claude extension signed in to the same claude.ai account
+and organization, and logged in to GitHub. When no browser is connected the
+rule makes the session report the remaining steps instead of improvising.
 
-Not yet verified on a real cloud VM: that the main session process picks the
-variable up from `~/.claude/settings.json`, that the VM can reach the bridge
-(`bridge.claudeusercontent.com` is not in the default allowed domains), that
-`file_upload` accepts a path inside the VM, and that the proxy lets the
-Projects v2 REST calls through. If the first fails, add
-`CLAUDE_CODE_ENABLE_CFC=1` to the environment's **Environment variables**
-field; if the second fails, add the bridge host to **Allowed domains**.
+Confirmed on a cloud VM on 2026-11-17 with Claude Code 2.1.326 and gh 2.103.3:
+
+- `gh api graphql` returned 403 `GitHub GraphQL is not available from Claude
+  Code sessions`, and `gh api users/<login>/projectsV2` returned 403 `sessions
+  are bound to their configured repositories`.
+- The main session had no `mcp__claude-in-chrome__*` tool. A nested
+  `claude --chrome -p` listed the local macOS Chrome with
+  `list_connected_browsers`.
+- `bridge.claudeusercontent.com` and `uploads.github.com` were reachable with
+  the default network access.
+
+Not yet verified: an actual upload with `file_upload` from a path inside the
+VM, and a Project Status change through the UI.
 
 ### local-mcp evaluation
 

@@ -8,12 +8,25 @@ GitHubの操作は次の順で試す。次へ進むのは、前の手段にそ�
 
 1. GitHub MCPのツール
 2. `gh`のREST系コマンドと、RESTの`gh api`
-3. Claude in Chrome(`mcp__claude-in-chrome__*`)によるGitHubの画面操作
+3. 入れ子で起動したClaude CodeのClaude in Chrome(`mcp__claude-in-chrome__*`)によるGitHubの画面操作
 
 - クラウド環境のproxyはGraphQLを拒否する。`gh pr edit`、`gh project`、`gh api graphql`が403になったら、トークンやscopeを変えて再試行しない。
 - セッションの対象外のリポジトリであることを示す403や権限不足の403では、3へ進まずに止まって報告する。proxyが止めた操作を画面から実行しない。
-- Projects v2への追加とStatusなどのフィールド変更は、先に2のRESTで試す。追加は`POST /orgs/{org}/projectsV2/{project_number}/items`、フィールド更新は`PATCH /orgs/{org}/projectsV2/{project_number}/items/{item_id}`を使う。
+- proxyは`repos/{owner}/{repo}/`配下以外のパスも403で拒否する。Projects v2のRESTは`orgs/`と`users/`の配下にあるので使えない。Projects v2への追加とStatusなどのフィールド変更は3で行う。
 - 画像と動画の添付は、2に使える手段がなければ3で行う。
+
+## 入れ子のセッションの起動
+
+クラウド環境の主セッションにはブラウザツールが読み込まれない。3へ進むときは、Bashで入れ子のClaude Codeを起動して操作を任せる。Bashのtimeoutは900000にする。
+
+```sh
+timeout 870 claude --chrome -p '<指示>' 2>&1 | tail -60
+```
+
+- 指示には、対象のPR、Issue、ProjectのURL、行う操作、設定する値、添付するファイルの絶対パス、完了を判定する条件を書く。操作の結果と、失敗したときの理由を報告させる。
+- 1回の起動で任せる操作は、1つのPRまたはIssueに対するものにまとめる。
+- 入れ子のセッションの報告だけで完了と判断せず、主セッションがGitHub MCPか`gh api`で対象を読み戻して確かめる。
+- ブラウザツールが読み込まれているセッションは入れ子の側なので、次の「画面操作」を自分で行い、さらに入れ子を起動しない。
 
 ## 画面操作
 
@@ -35,7 +48,7 @@ GitHubの操作は次の順で試す。次へ進むのは、前の手段にそ�
 
 次のどれかに当たったら、別の回避策を探さない。残った操作を、対象のPRまたはIssue、添付するファイルのパス、設定する値とともに報告し、ほかの作業を続ける。
 
-- ブラウザツールが読み込まれていない、または`list_connected_browsers`が空である。
+- 入れ子のセッションにブラウザツールが読み込まれない、または`list_connected_browsers`が空である。
 - 接続中のブラウザが複数あり、利用者に選んでもらえない。
 - ログイン、2要素認証、再認証の画面が出た。
 - 同じ操作が2回失敗した。再試行の前に対象を読み戻し、未実行と確かめられた操作だけをやり直す。

@@ -2,8 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
-    "BASH_MAX_TIMEOUT_MS": "1200000",
-    "CLAUDE_CODE_ENABLE_CFC": "1"
+    "BASH_MAX_TIMEOUT_MS": "1200000"
   },
   "permissions": {
     "allow": [
@@ -192,7 +191,7 @@
       "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff.",
       "Force-pushing with `git push --force-with-lease` is allowed for a feature or PR branch that the agent created, checked out for its own work, or the user named, when a `git rebase` or `git pull --rebase` of that branch is visible earlier in the session. Bare `--force`, the default branch, and branches named like release/*, deploy, production or gh-pages are not covered. Content rules still apply to the pushed commits.",
       "Creating Draft pull requests and updating labels, assignees, reviewers, title and body of pull requests or issues in repositories under github.com/classmethod-aws is allowed, through `gh` or the GitHub MCP tools create_pull_request, update_pull_request and issue_write, including items not created this session and across several repositories in one session. Posting review comments and PR comments through `gh api` or the GitHub MCP comment/review tools is allowed the same way. This covers the write operation, not its content: PR, issue and comment bodies are still judged for sensitive detail. Calls that set `state: closed`, `draft: false`, approve a review or merge are not covered.",
-      "In a cloud session, operating the github.com web UI through the Claude in Chrome tools (mcp__claude-in-chrome__*) is allowed for pull requests and issues in repositories under github.com/classmethod-aws when the GitHub MCP server and `gh` cannot perform the operation, in a tab opened on the URL of that pull request, issue or its Project: attaching image or video files from the working repository, or screenshots taken in the session, to a PR or issue body or comment, adding the item to a GitHub Project, and changing its Project fields such as Status. This covers the write operation, not its content. Merging, marking Ready for review, closing and deleting through the web UI are not covered."
+      "In a cloud session, starting a nested `claude --chrome -p` from Bash to operate the github.com web UI, and operating that UI through the Claude in Chrome tools (mcp__claude-in-chrome__*), is allowed for pull requests and issues in repositories under github.com/classmethod-aws when the GitHub MCP server and `gh` cannot perform the operation, in a tab opened on the URL of that pull request, issue or its Project: attaching image or video files from the working repository, or screenshots taken in the session, to a PR or issue body or comment, adding the item to a GitHub Project, and changing its Project fields such as Status. This covers the write operation, not its content. Merging, marking Ready for review, closing and deleting through the web UI are not covered."
     ],
     "soft_deny": [
       "$defaults",
