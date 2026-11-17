@@ -11,8 +11,8 @@ GitHubの操作は次の順で試す。次へ進むのは、前の手段にそ�
 3. 入れ子で起動したClaude CodeのClaude in Chrome(`mcp__claude-in-chrome__*`)によるGitHubの画面操作
 
 - クラウド環境のproxyはGraphQLを拒否する。`gh pr edit`、`gh project`、`gh api graphql`が403になったら、トークンやscopeを変えて再試行しない。
-- セッションの対象外のリポジトリであることを示す403や権限不足の403では、3へ進まずに止まって報告する。proxyが止めた操作を画面から実行しない。
-- proxyは`repos/{owner}/{repo}/`配下以外のパスも403で拒否する。Projects v2のRESTは`orgs/`と`users/`の配下にあるので使えない。Projects v2への追加とStatusなどのフィールド変更は3で行う。
+- Projects v2の参照、追加、Statusなどのフィールド変更は、2を試さずに3で行う。Projects v2のAPIはGraphQLと`orgs/`、`users/`配下のRESTだけで、proxyはどちらも403(`sessions are bound to their configured repositories`)で拒否する。
+- セッションに設定されていないリポジトリのPRやIssueを操作しようとして403になったときと、権限不足の403のときは、3へ進まずに止まって報告する。proxyが止めたリポジトリへの操作を画面から実行しない。
 - 画像と動画の添付は、2に使える手段がなければ3で行う。
 
 ## 入れ子のセッションの起動
