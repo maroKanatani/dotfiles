@@ -36,4 +36,9 @@ fi
 
 bash "$repo_root/scripts/setup-agents.sh"
 
+# GitHub MCP と gh でできない操作を Claude in Chrome へ回す手順は、cloud でだけ読ませる。
+# setup-agents.sh はローカルと共通なので、このリンクはここで足す。
+mkdir -p "$HOME/.claude/rules"
+ln -sfn "$repo_root/config/claude/rules/cloud-github.md" "$HOME/.claude/rules/cloud-github.md"
+
 exit 0

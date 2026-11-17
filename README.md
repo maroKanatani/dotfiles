@@ -270,6 +270,35 @@ Whether Codex Cloud reads `~/.codex` or plugins written by a setup script has
 not been verified. The path its documentation guarantees is the repository's
 own `AGENTS.md`.
 
+#### GitHub operations the proxy cannot do
+
+The cloud GitHub proxy rejects GraphQL with a 403 whatever token is supplied
+(https://code.claude.com/docs/en/cloud-environments, checked 2026-11-17), so
+`gh pr edit`, `gh project`, and `gh api graphql` fail, and the GitHub MCP
+server cannot attach images. `config/claude/rules/cloud-github.md`, linked
+into `~/.claude/rules/` by `cloud-setup.sh` only, tells the session to try the
+GitHub MCP server, then REST through `gh` (including the Projects v2 REST
+endpoints, https://docs.github.com/en/rest/projects/items), then the
+github.com UI through Claude in Chrome, and forbids pushing images to a side
+branch.
+
+Claude in Chrome is turned on by `CLAUDE_CODE_ENABLE_CFC=1` in the `env` key of
+`config/claude/settings.json`. On Claude Code 2.1.326 a `claude -p` run loaded
+the `mcp__claude-in-chrome__*` tools with that key set through `--settings`
+and did not without it. The browser being driven is the Chrome on your own
+machine: it must be running with the Claude extension signed in to the same
+claude.ai account and organization, and logged in to GitHub. When no browser
+is connected the rule makes the session report the remaining steps instead of
+improvising.
+
+Not yet verified on a real cloud VM: that the main session process picks the
+variable up from `~/.claude/settings.json`, that the VM can reach the bridge
+(`bridge.claudeusercontent.com` is not in the default allowed domains), that
+`file_upload` accepts a path inside the VM, and that the proxy lets the
+Projects v2 REST calls through. If the first fails, add
+`CLAUDE_CODE_ENABLE_CFC=1` to the environment's **Environment variables**
+field; if the second fails, add the bridge host to **Allowed domains**.
+
 ### local-mcp evaluation
 
 `local-mcp` is not installed by this repository. It is a local MCP server for

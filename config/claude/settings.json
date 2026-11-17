@@ -2,7 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
-    "BASH_MAX_TIMEOUT_MS": "1200000"
+    "BASH_MAX_TIMEOUT_MS": "1200000",
+    "CLAUDE_CODE_ENABLE_CFC": "1"
   },
   "permissions": {
     "allow": [
@@ -190,13 +191,14 @@
       "$defaults",
       "Running `codex exec` to obtain a second-opinion review of the working repository's own diff is allowed, including when the prompt file passed on stdin contains that diff.",
       "Force-pushing with `git push --force-with-lease` is allowed for a feature or PR branch that the agent created, checked out for its own work, or the user named, when a `git rebase` or `git pull --rebase` of that branch is visible earlier in the session. Bare `--force`, the default branch, and branches named like release/*, deploy, production or gh-pages are not covered. Content rules still apply to the pushed commits.",
-      "Creating Draft pull requests and updating labels, assignees, reviewers, title and body of pull requests or issues in repositories under github.com/classmethod-aws is allowed, through `gh` or the GitHub MCP tools create_pull_request, update_pull_request and issue_write, including items not created this session and across several repositories in one session. Posting review comments and PR comments through `gh api` or the GitHub MCP comment/review tools is allowed the same way. This covers the write operation, not its content: PR, issue and comment bodies are still judged for sensitive detail. Calls that set `state: closed`, `draft: false`, approve a review or merge are not covered."
+      "Creating Draft pull requests and updating labels, assignees, reviewers, title and body of pull requests or issues in repositories under github.com/classmethod-aws is allowed, through `gh` or the GitHub MCP tools create_pull_request, update_pull_request and issue_write, including items not created this session and across several repositories in one session. Posting review comments and PR comments through `gh api` or the GitHub MCP comment/review tools is allowed the same way. This covers the write operation, not its content: PR, issue and comment bodies are still judged for sensitive detail. Calls that set `state: closed`, `draft: false`, approve a review or merge are not covered.",
+      "In a cloud session, operating the github.com web UI through the Claude in Chrome tools (mcp__claude-in-chrome__*) is allowed for pull requests and issues in repositories under github.com/classmethod-aws when the GitHub MCP server and `gh` cannot perform the operation, in a tab opened on the URL of that pull request, issue or its Project: attaching image or video files from the working repository, or screenshots taken in the session, to a PR or issue body or comment, adding the item to a GitHub Project, and changing its Project fields such as Status. This covers the write operation, not its content. Merging, marking Ready for review, closing and deleting through the web UI are not covered."
     ],
     "soft_deny": [
       "$defaults",
       "PR Merge [named+specifics — must name: the PR being merged]: Merging any pull request by any means (`gh pr merge`, the GitHub MCP tool merge_pull_request, or the REST API), regardless of review or check state. The user's workflow never merges from the agent. Clears only when the user asked in this session to merge that specific PR.",
-      "PR/Issue State Change [named+specifics — must name: the item and the state change]: Marking a pull request Ready for review (`gh pr ready`, `draft: false`), or closing or reopening a pull request or issue (`gh pr close`, `gh issue close`, `state: closed`/`open`), including items the agent created this session. Clears only when the user asked for that change to that item.",
-      "Remote Deletion via API [named+specifics — must name: the remote resource being deleted]: `gh api` with `-X DELETE` or `--method DELETE`, and GitHub MCP or REST calls that delete remote comments, reviews, labels, branches or other resources, including ones the agent created this session. Clears only when the user named the target in this session."
+      "PR/Issue State Change [named+specifics — must name: the item and the state change]: Marking a pull request Ready for review (`gh pr ready`, `draft: false`), or closing or reopening a pull request or issue (`gh pr close`, `gh issue close`, `state: closed`/`open`), by any means including the github.com web UI driven through browser tools, including items the agent created this session. Clears only when the user asked for that change to that item.",
+      "Remote Deletion via API [named+specifics — must name: the remote resource being deleted]: `gh api` with `-X DELETE` or `--method DELETE`, and GitHub MCP or REST calls that delete remote comments, reviews, labels, branches or other resources, and the same deletions made in the github.com web UI through browser tools, including ones the agent created this session. Clears only when the user named the target in this session."
     ],
     "environment": [
       "$defaults",
