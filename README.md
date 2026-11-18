@@ -302,8 +302,21 @@ Confirmed on a cloud VM on 2026-11-17 with Claude Code 2.1.326 and gh 2.103.3:
 - `bridge.claudeusercontent.com` and `uploads.github.com` were reachable with
   the default network access.
 
-Not yet verified: an actual upload with `file_upload` from a path inside the
-VM, and a Project Status change through the UI.
+- GitHub pages have no file input until the file button is pressed, and a
+  real click opens an OS dialog nobody can operate. The rule therefore presses
+  the comment box's button from a script, hands the created input to
+  `file_upload`, reads the resulting `user-attachments` markup, and lets the
+  main session write it into the body through the GitHub MCP server. An image
+  inside the VM was attached to a Draft PR this way on 2026-11-18.
+- `file_upload` refuses a path outside the directories the nested session may
+  read, so the nested run gets `--add-dir <directory of the file>`.
+- The GitHub account of the cloud integration and the one logged in to Chrome
+  must both have write access to the repository. Creating a PR in a repository
+  where the integration's account is not a collaborator fails with `must be a
+  collaborator`.
+
+Not yet verified: a Project Status change through the UI, and a session started
+interactively from claude.ai/code rather than as a routine.
 
 ### local-mcp evaluation
 
