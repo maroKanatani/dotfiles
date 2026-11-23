@@ -1,7 +1,7 @@
 [tools]
 python = "3.15.2"
 node = "26.13.1"
-pnpm = "12.21.0"
+pnpm = "12.23.0"
 deno = "2.9.8"
 java = "temurin-25"
 zig = "0.17.1"
