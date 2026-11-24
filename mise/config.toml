@@ -5,7 +5,7 @@ pnpm = "12.21.0"
 deno = "2.9.8"
 java = "temurin-25"
 zig = "0.17.1"
-uv = "0.13.9"
+uv = "0.13.10"
 terraform = "1.17.2"
 actionlint = "1.7.12"
 
